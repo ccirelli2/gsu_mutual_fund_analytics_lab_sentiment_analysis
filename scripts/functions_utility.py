@@ -150,9 +150,9 @@ def write2excel(dataframe, dir_output, project_folder=None, filename=''):
 
     """
     if project_folder:
-        path = dir_output + '/' + project_folder + '/' + filename
+        path = os.path.join(dir_output, project_folder, filename)
     else:
-        path = dir_output + '/' + filename
+        path = os.path.join(dir_output, filename)
  
     dataframe.to_excel(path)
     logging.info(f'---- {filename} writen to directory {dir_output}')
