@@ -5,6 +5,7 @@ import logging
 from datetime import datetime
 import sys
 import pandas as pd
+import numpy as np
 import inspect
 from tqdm import tqdm
 import time
@@ -185,7 +186,7 @@ def get_natural_disaster_tokens():
 
 
 
-def clean_tok_sentence(sent):                           
+def clean_tok_sentence(sent, lemmatize):                           
     """
     Function that removes punctuation from sentence, tokenizes sent
     and lemmatizes tokens
@@ -204,16 +205,20 @@ def clean_tok_sentence(sent):
     sent_nopunct = ''.join(list(map(
         lambda x: x if x not in punctuation else ' ', sent)))
     # Tokenize & Lemmatize 
-    sent_tok = word_tokenize(sent_nopunct)                     
-    lemmer = WordNetLemmatizer()
-    lemm_tok = [lemmer.lemmatize(x) for x in sent_tok]
-    return lemm_tok
-
+    sent_tok = word_tokenize(sent_nopunct)
+    
+    if lemmatize:
+        lemmer = WordNetLemmatizer()
+        sent_tok = [lemmer.lemmatize(x) for x in sent_tok]
+    
+    # Return Results
+    return sent_tok
+    
 
 @my_timeit                                              
 def get_sentences_matching_tokens(
-        data_original, tokens, iteration, dir_output, project_folder,
-        write2file, quality_control=False):
+        data_original, tokens, dir_output, project_folder,
+        write2file, quality_control=False, lemmatize=False, iteration=None):
     """                                                                         
     Identify sentences that contain the list of input tokens.                     
 
@@ -299,7 +304,7 @@ def get_sentences_matching_tokens(
     # Iterate Sentences
     for sent in data_lim['sentences'].values:
         # Clean & Tokenize Sentence                                             
-        sent_clean_tok = clean_tok_sentence(sent)
+        sent_clean_tok = clean_tok_sentence(sent, lemmatize)
         # Iterate Tokens                                                        
         for tk in tokens:
             # If Our Token is a 1 Gram                                          
@@ -347,25 +352,194 @@ def get_sentences_matching_tokens(
     # Write & Return Results 
     ###########################################################################
     if write2file:
-        write2csv(data_lim, dir_output, project_folder,
-                'unverified_matches.csv')
-        write2csv(tk_matches_lim, dir_output, project_folder,
-                'verified_matches.csv')
-        write2csv(df_final, dir_output, project_folder,
-                'original_dataset_verified_matches.csv')
+        if iteration:
+            write2csv(data_lim, dir_output, project_folder,
+                    f'unverified_matches_{iteration}.csv')
+            write2csv(tk_matches_lim, dir_output, project_folder,
+                    f'verified_matches_{iteration}.csv')
+            write2csv(df_final, dir_output, project_folder,
+                    f'verified_matches_with_original_cols_{iteration}.csv')
+        else:
+            write2csv(data_lim, dir_output, project_folder,
+                    'unverified_matches.csv')
+            write2csv(tk_matches_lim, dir_output, project_folder,
+                    'verified_matches.csv')
+            write2csv(df_final, dir_output, project_folder,
+                    'original_dataset_verified_matches.csv')
+
     # Return final dataframe
     return df_final
 
 
 
+@my_timeit
+def get_sentences_matching_tokens_v2(
+        data_original, tokens, dir_output, project_folder,
+        write2file, quality_control=False, lemmatize=False, iteration=None):
+    """                                                                         
+    Identify sentences that contain the list of input tokens.                     
 
+    Unlike v1 of this function, v2 finds the total number of matches
+    for a given token in a sentence.
 
+    Steps:
+    Unverified Match : find if any tokens are in sentence.
+    Verified Match : Involves actually cleaning and tokenizing sentences
+                    and matching one to one with tokens
 
+    Args:                                                                       
+        data: DataFrame; Rows = each row is a tokenized sentences.
+                A primary key links the sentence to the original paragraphs.
+        tokens: List; contains lowercase single ngram tokens                                 
+        interation : Int; because the tokenized sentences are chunked, the
+                iteration value is passed to the write2file function to match
+                each input file to output.
+        dir_output:                                                           
+        project_folder:                                                         
+        write2file: Boolean; Whether to write to file or not.
 
+    Return:                                                                     
+    -------------                                                               
+    data with the addition of columns for each of the n tokens containing
+    binary values that represent a match with the sentence or not.
+    """
+    ##########################################################################  
+    # Data Transformations                                                             
+    ##########################################################################  
+    # Create Deep Copy of dataset
+    data_cp = copy.deepcopy(data_original)
+    # Add Sentence Primary Key (accession# key is not unique at the sent lvl
+    data_cp['sent_pkey'] = [str(x) + f'-{y}' for x, y in zip(
+    data_cp['accession_num'].values, range(data_cp.shape[0]))]
 
+    ##########################################################################  
+    # Result Object                                                             
+    ##########################################################################  
+    unverified_match = []
+    sent_counter = 0
 
+    # Logging
+    logging.info(f'---- dimensions original dataset => {data_original.shape}')
+    logging.info(f'---- number of tokens => {len(tokens)}')
+    logging.info('---- getting unverified matches')
 
+    ###########################################################################
+    # Get Unverified Match of Tokens
+    ###########################################################################
 
+    # Iterate Pkey & Sentences
+    for sent in data_cp['sentences'].values:
+        # Token Counter
+        tokens_cp = copy.deepcopy(tokens)
+        # Iterate Tokens
+        for tk in tokens:
+            tk = str(tk)
+            # Remove Token From List
+            tokens_cp.pop(tokens_cp.index(tk))
+            # If list not empty
+            if tokens_cp:
+                if tk in sent:
+                    logging.debug('---- match found')
+                    unverified_match.append(1)
+                    break
+            else:
+                logging.debug(f'---- no match found')
+                unverified_match.append(0)
+
+    # Add Unverified Match to Data
+    data_cp['unverified_match'] = unverified_match
+
+    # Lim Data To Only Sentences Unverified Match 
+    data_lim = data_cp[data_cp['unverified_match'] == 1]
+
+    # Log number of matches
+    logging.info(f'---- number unverified matches => {data_lim.shape[0]}')
+
+    ###########################################################################
+    # Get Verified Match of Tokens
+    ###########################################################################
+    # Create Empty Result Object
+    tk_match_dict = {x:[] for x in tokens}
+    sent_counter = 0
+
+    # Iterate Sentences
+    for sent in data_lim['sentences'].values:
+        # Clean & Tokenize Sentence                                             
+        sent_clean_tok = clean_tok_sentence(sent, lemmatize)
+        # Iterate Tokens                                                        
+        for tk in tokens:
+            # If Our Token is a 1 Gram                                          
+            if len(tk.split(' ')) == 1:
+                # Use np.where to get index pos of each match
+                match = [x for x in sent_clean_tok if x == tk] 
+                # If Match Not Empty
+                if match:
+                    # Append len(match) which equates to count
+                    tk_match_dict[tk].append(len(match))
+                    # Debug
+                else:
+                    tk_match_dict[tk].append(0)
+
+            # Otherwise We need to Create Ngrams of Sentence                    
+            else:
+                # Tokenize token (Assumes tokens do not have punctuation)
+                tk_tokenized = tk.split(' ')
+                # Create ngram of sentence = len(list tokens)                    
+                sentence_ngrams = ngrams(sent_clean_tok, len(tk_tokenized))
+                # Get All Matches
+                match = [x for x in sentence_ngrams if x == tuple(tk_tokenized)]
+                # If Match list not empty                    
+                if match:
+                    # Append the length of list / num grams
+                    tk_match_dict[tk].append(len(match))
+                else:
+                    tk_match_dict[tk].append(0)
+        # Sentence Counter
+        sent_counter+=1
+        if sent_counter%10000==0:
+            pct_completed = round((sent_counter / data_lim.shape[0])*100,3)
+            logging.info(f'---- sentences completed => {sent_counter}, pct => {pct_completed}')
+    ###########################################################################
+    # Create Results DataFrame & Join to Original Dataset
+    ###########################################################################
+    tk_matches = pd.DataFrame(tk_match_dict)
+    tk_matches['sent_pkey'] = data_lim['sent_pkey'].values
+    # Get Sum of Matches Across Tokens
+    tk_col = tk_matches[tokens]
+    tk_matches['sum_matches'] = tk_col.sum(axis=1)
+    # Limit Tk Matches To Sum > 0
+    tk_matches_lim = tk_matches[tk_matches['sum_matches'].values > 0]
+    # Merge df_tk_matchs w/ data_lim
+    df_final = pd.merge(data_lim, tk_matches_lim, left_on='sent_pkey',
+            right_on='sent_pkey')
+
+    if quality_control:
+        logging.info(f'---- dim unverified matches before => {data_lim.shape}')
+        logging.info(f'---- dim unverified matches after => {tk_matches.shape}')
+        logging.info(f'---- dim verified matches => {tk_matches_lim.shape}')
+        logging.info(f'---- dim merged data => {df_final.shape}')
+
+    ###########################################################################
+    # Write & Return Results 
+    ###########################################################################
+    if write2file:
+        if iteration:
+            write2csv(data_lim, dir_output, project_folder,
+                    f'unverified_matches_{iteration}.csv')
+            write2csv(tk_matches_lim, dir_output, project_folder,
+                    f'verified_matches_{iteration}.csv')
+            write2csv(df_final, dir_output, project_folder,
+                    f'final_results_verified_matches_with_original_cols_{iteration}.csv')
+        else:
+            write2csv(data_lim, dir_output, project_folder,
+                    'unverified_matches.csv')
+            write2csv(tk_matches_lim, dir_output, project_folder,
+                    'verified_matches.csv')
+            write2csv(df_final, dir_output, project_folder,
+                    'final_results_verified_matches_with_original_cols.csv')
+
+    # Return final dataframe
+    return df_final
 
 
 
