@@ -187,7 +187,7 @@ def create_project_folder(dir_output, name):
 
 
 @my_timeit
-def chunk_csv_file(data, num_chunks, dir_output, write2file):
+def chunk_csv_file(data, num_chunks, filename_output, dir_output, write2file):
     """
     Function to create and write to file equal size chunks of csv file.
 
@@ -215,7 +215,7 @@ def chunk_csv_file(data, num_chunks, dir_output, write2file):
             data = data.drop(axis=0, index=chunk.index)
             logging.info(f'---- data dimension post chunk => {data.shape}')
             # Write Chunk to output directory
-            filename = f'data_chunk_{i}.csv'
+            filename = f'{filename_output}_{i}.csv'
             path2file = os.path.join(dir_output, filename)
             chunk.to_csv(path2file)
             # Increase Count
@@ -223,7 +223,7 @@ def chunk_csv_file(data, num_chunks, dir_output, write2file):
         # So that we don't have to worry about the remainder, just append
         # Remaining rows
         else:
-            filename = f'data_chunk_{i}.csv'
+            filename = f'{filename_output}_{i}.csv'
             data.to_csv(os.path.join(dir_output, filename))
 
 

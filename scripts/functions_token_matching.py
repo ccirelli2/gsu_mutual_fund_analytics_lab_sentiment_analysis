@@ -407,7 +407,8 @@ def get_sentences_matching_tokens_v2(
     # Data Transformations                                                             
     ##########################################################################  
     # Create Deep Copy of dataset
-    data_cp = copy.deepcopy(data_original)
+    #data_cp = copy.deepcopy(data_original)
+    data_cp = data_original
     # Add Sentence Primary Key (accession# key is not unique at the sent lvl
     data_cp['sent_pkey'] = [str(x) + f'-{y}' for x, y in zip(
     data_cp['accession_num'].values, range(data_cp.shape[0]))]
@@ -526,15 +527,11 @@ def get_sentences_matching_tokens_v2(
         if iteration:
             write2csv(data_lim, dir_output, project_folder,
                     f'unverified_matches_{iteration}.csv')
-            write2csv(tk_matches_lim, dir_output, project_folder,
-                    f'verified_matches_{iteration}.csv')
             write2csv(df_final, dir_output, project_folder,
                     f'final_results_verified_matches_with_original_cols_{iteration}.csv')
         else:
             write2csv(data_lim, dir_output, project_folder,
                     'unverified_matches.csv')
-            write2csv(tk_matches_lim, dir_output, project_folder,
-                    'verified_matches.csv')
             write2csv(df_final, dir_output, project_folder,
                     'final_results_verified_matches_with_original_cols.csv')
 

@@ -60,7 +60,7 @@ import functions_token_matching as m_tkm
 # Function Parameters 
 ###############################################################################
 write2file=True
-quality_control=True
+quality_control=False
 sample_pct=1.0 
 lemmatize=False
 
@@ -68,8 +68,8 @@ lemmatize=False
 ##############################################################################
 # Import Data
 ###############################################################################
-token_type_name = 'legal_tokens'
-token_filename = 'tx_legal_con.xlsx'
+token_type_name = 'negative_tokens'
+token_filename = 'tx_negative_con.xlsx'
 
 
 project_folder = create_project_folder(dir_results, 'sent_tok_match_{}'.format(
@@ -85,14 +85,14 @@ else:
         ))['original_tokens'].dropna(axis=0)
 
 # Create Set of Tokens (Remove Any Duplicates)
-tokens_unique = list(set([x.lower() for x in tokens]))
-
+tokens_unique = list(set([str(x).lower() for x in tokens]))
+print(tokens_unique)
 
 ###############################################################################
 # Iterate Chunked Files & Match PH Tokens
 ###############################################################################
 
-
+start = datetime.now()
 def run(): 
     for i in range(10):
         logging.info(f'---- iteration => {i}')
@@ -114,3 +114,10 @@ def run():
                 write2file, quality_control, lemmatize, iteration=i)
 
 run()
+
+duration = (datetime.now() - start).total_seconds()
+logging.info('Program finished.  Total duration in seconds => {}'.format(
+    duration))
+
+
+
