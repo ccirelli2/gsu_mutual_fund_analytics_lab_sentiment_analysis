@@ -454,7 +454,9 @@ def get_sentences_matching_tokens_v2(
     data_lim = data_cp[data_cp['unverified_match'] == 1]
 
     # Log number of matches
+    pct_match = round((data_lim.shape[0] / data_cp.shape[0])*100, 3)
     logging.info(f'---- number unverified matches => {data_lim.shape[0]}')
+    logging.info(f'---- pct of total sentences => {pct_match}')
 
     ###########################################################################
     # Get Verified Match of Tokens
