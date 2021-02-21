@@ -54,9 +54,10 @@ from functions_decorators import *
 def get_lowercase_lem_tokens(original_tokens):
     """
     Simple function to convert a list of tokens
-    to lowercase.
+    to lowercase w/ the option to step or lemmatize tokens.
 
-    Function returns list object
+    This function assumes that any preprocessing of punctuation has
+    been completed prior to using this function.
     """
     
     # Create Lemmer & Stem Objects
@@ -249,9 +250,10 @@ def get_sentences_matching_tokens(
     # Create Deep Copy of dataset
     data_cp = copy.deepcopy(data_original)
     # Add Sentence Primary Key (accession# key is not unique at the sent lvl
+    """# Added to flow in dataiku 
     data_cp['sent_pkey'] = [randint(1000000000, 9999999999)
             for x in range(data_cp.shape[0])]
-
+    """
     ##########################################################################  
     # Result Object                                                             
     ##########################################################################  
@@ -453,8 +455,6 @@ def get_sentences_matching_tokens_v2(
     # Lim Data To Only Sentences Unverified Match 
     data_lim = data_cp[data_cp['unverified_match'] == 1]
 
-    # Log number of matches
-    pct_match = round((data_lim.shape[0] / data_cp.shape[0])*100, 3)
     logging.info(f'---- number unverified matches => {data_lim.shape[0]}')
     logging.info(f'---- pct of total sentences => {pct_match}')
 

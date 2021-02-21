@@ -100,6 +100,40 @@ def load_file(filename, directory, project_folder=None):
     return data
 
 
+@my_timeit
+def load_file2(path2file, name):
+    """
+    Generic function load Excel and CSV files.
+
+    Parameters
+    ----------
+    filename : TYPE
+        DESCRIPTION.
+    directory : TYPE
+        DESCRIPTION.
+    project_folder : TYPE, optional
+        DESCRIPTION. The default is None.
+
+    Returns
+    -------
+    Dataframe
+
+    """
+    logging.info(f'---- loading file => {name}')
+    
+    if '.csv' in path2file:
+        data = pd.read_csv(path2file)
+    elif '.xlsx' in path2file:
+        data = pd.read_excel(path2file)
+    else:
+        logging.warning('This function can only load Excel of CSV files')
+    
+    logging.info(f'---- returning dataframe with dimensions => {data.shape}')
+    
+    # Return
+    return data
+
+
 def write2csv(dataframe, dir_output, project_folder=None, filename=''):
     """
     Generic function write dataframe to csv.
