@@ -34,7 +34,7 @@ logging.basicConfig(level=logging.INFO)
 ############################################################################### 
 # Connect 2 Database                                                               
 ############################################################################### 
-conn, my_cursor = conn_mysql('Gsu2020!', 'mutual_fund_lab')
+conn, my_cursor = conn_mysql(, 'mutual_fund_lab')
 query_matched_sent = """SELECT *
             FROM GSUMUTUALFUNDLAB_principal_risk_token_matches_negative_h1"""
 query_sent_dict = """SELECT *
