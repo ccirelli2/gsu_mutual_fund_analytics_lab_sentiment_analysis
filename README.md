@@ -1,5 +1,7 @@
-#mutual_fund_analytics_lab_sentiment_analysis
-Sentiment analysis for mutual fund disclosures
+# GSU Mutual Fund Analytics Lab - Sentiment Analysis
+
+### Project Description
+- Sentiment analysis for mutual fund disclosures
 
 
 ### Requested Documentation:
