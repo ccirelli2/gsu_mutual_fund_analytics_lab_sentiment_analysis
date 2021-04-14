@@ -13,6 +13,6 @@ Sentiment analysis for mutual fund disclosures
 
 5.  Identify the relevant files for the final work product (include the name and the location along with a description of the file if not self-evident from title and/or if there are multiple files.  Be over rather than under inclusive.
 
-6.  Identify any next steps or undone work. If someone were to pick this up what else should be done, or what didn’t you have time to do this semester?
+6.  Identify any next steps or undone work. If someone were to pick this up what else should be done, or what didn’t you have time to do this semester
 - Update sentiment dictionary to comply with the format of the sentiment dictionary found in the data folder.
 - Address the issue that the code does not distinguish between paragraphs and headings.
