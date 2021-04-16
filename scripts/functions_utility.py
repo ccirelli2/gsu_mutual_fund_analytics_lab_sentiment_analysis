@@ -62,46 +62,7 @@ def load_mysql_data(conn, query):
 
 
 @my_timeit
-def load_file(filename, directory, project_folder=None):
-    """
-    Generic function load Excel and CSV files.
-
-    Parameters
-    ----------
-    filename : TYPE
-        DESCRIPTION.
-    directory : TYPE
-        DESCRIPTION.
-    project_folder : TYPE, optional
-        DESCRIPTION. The default is None.
-
-    Returns
-    -------
-    Dataframe
-
-    """
-    logging.info(f'Loading File => {filename}')
-    # Define Path 2 File
-    if project_folder:
-        path = directory + '/' + project_folder + '/' + filename
-    else:
-        path = directory + '/' + filename
-
-    # Load Data
-    if '.csv' in filename:
-        data = pd.read_csv(path)
-    elif '.xlsx' in filename:
-        data = pd.read_excel(path)
-    else:
-        logging.warning('This function can only load Excel of CSV files')
-    logging.info(f'---- returning dataframe with dimensions => {data.shape}')
-    
-    # Return
-    return data
-
-
-@my_timeit
-def load_file2(path2file, name):
+def load_file(path2file, name, delimiter):
     """
     Generic function load Excel and CSV files.
 
@@ -122,7 +83,7 @@ def load_file2(path2file, name):
     logging.info(f'---- loading file => {name}')
     
     if '.csv' in path2file:
-        data = pd.read_csv(path2file)
+        data = pd.read_csv(path2file, delimiter)
     elif '.xlsx' in path2file:
         data = pd.read_excel(path2file)
     else:
@@ -159,7 +120,7 @@ def write2csv(dataframe, dir_output, project_folder=None, filename=''):
     else:
         path=os.path.join(dir_output, filename) 
  
-    dataframe.to_csv(path)
+    dataframe.to_csv(path, sep="|")
     logging.info(f'---- {filename} writen to directory {dir_output}')
 
 

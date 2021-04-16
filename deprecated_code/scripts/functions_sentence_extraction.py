@@ -1,85 +1,44 @@
+# -*- coding: utf-8 -*-
 """
-Description : 
+Created on Wed Jan 13 18:34:49 2021
 
-
+@author: chris.cirelli
 """
 ###############################################################################
 # Import Python Libraries
 ###############################################################################
-import logging
-import os
-import sys
-import pandas as pd
-import inspect
-import time
-from tqdm import tqdm
-from collections import Counter
+import logging; logging.basicConfig(level=logging.INFO)
 from datetime import datetime
-from functools import wraps
-
-from nltk.tokenize import word_tokenize
-from nltk.tokenize import sent_tokenize
-from nltk.tokenize.punkt import PunktSentenceTokenizer, PunktParameters, PunktTrainer
-
-
-###############################################################################
-# Declare Directories
-###############################################################################
-dir_repo = r'/home/cc2/Desktop/repositories/mutual_fund_analytics_lab_sentiment_analysis'
-dir_scripts = os.path.join(dir_repo, 'scripts')
-dir_results = os.path.join(dir_repo, 'results')
-dir_reports = os.path.join(dir_repo, 'reports')
-dir_data = os.path.join(dir_repo, 'data')
-[sys.path.append(path) for path in [dir_scripts, dir_results, dir_reports,
-        dir_data]]
+from tqdm import tqdm
+from nltk.tokenize import sent_tokenize, word_tokenize
+from nltk.tokenize.punkt import PunktSentenceTokenizer, PunktTrainer
+from nltk.tokenize.punkt import PunktParameters
+import pandas as pd
+from tqdm import tqdm
+import re
+import inspect
+from collections import Counter
+import os
 
 ###############################################################################
 # Import Project Modules 
 ###############################################################################
-from functions_decorators import *
 from functions_utility import *
-import functions_sentence_extraction as m_sent_extr
-
-
+from functions_decorators import *
 
 ###############################################################################
-# Functions 
+# Function
 ###############################################################################
-
-@my_timeit
-def create_pkey(df, colname):
-    """
-    Function to create sentence primary key, which is a function of the accession number
-    and count of sentence.
-    """
-    # Create Primary Key Object.  Initialize = 1
-    pkey = [1]
-    count = 1
-    # Iterate Column values as pair
-    for val1, val2 in zip(df[colname].values.tolist(),
-                          df[colname].values.tolist()[1:]):
-        # If Value 2 == Value 1, Increase Count and append to pkey list.
-        if val2 == val1:
-            count += 1
-            pkey.append(count)
-        # When Value 2 != Value 1 then reset count & append.
-        else:
-            count = 1
-            pkey.append(count)
-    # Add Primary Key To DataFrame
-    df['sent_pkey'] = pkey
-    # Return df
-    return df
 
 
 @my_timeit
 def get_list_words_end_dot_provided():
-    return ['dr.', 'mr.', 'bro.', 'bro', 'mrs.', 'ms.',
-            'jr.', 'sr.', 'e.g.', 'vs.', 'u.s.',
-            'etc.', 'j.p.', 'inc.', 'llc.', 'co.', 'l.p.',
-            'ltd.', 'jan.', 'feb.', 'mar.', 'apr.', 'i.e.',
-            'jun.', 'jul.', 'aug.', 'oct.', 'dec.', 's.e.c.',
-            'inv. co. act']
+    return ['dr.', 'mr.', 'bro.', 'bro', 'mrs.', 'ms.',                                
+            'jr.', 'sr.', 'e.g.', 'vs.', 'u.s.',                                    
+            'etc.', 'j.p.', 'inc.', 'llc.', 'co.', 'l.p.',                          
+            'ltd.', 'jan.', 'feb.', 'mar.', 'apr.', 'i.e.',                         
+            'jun.', 'jul.', 'aug.', 'oct.', 'dec.', 's.e.c.',                       
+            'inv. co. act']  
 
 @my_timeit
 def get_tokens_end_dot(data, num, dir_output, project_folder,
@@ -91,7 +50,7 @@ def get_tokens_end_dot(data, num, dir_output, project_folder,
     ----------
     data : Dataframe
         Contains sentences of interest.
-    sample_pct : Float
+    sample_pct : Float 
         Sample percentage of rows to choose.
 
     Returns
@@ -99,7 +58,7 @@ def get_tokens_end_dot(data, num, dir_output, project_folder,
     Dictionary with word:count pair.
 
     """
-
+    
     sentences = data['sentences'].values.tolist()
 
     # Declare Results Object
@@ -117,13 +76,13 @@ def get_tokens_end_dot(data, num, dir_output, project_folder,
             regex = re.compile('[a-z]\.[a-z]\.[a-z]\.[a-z]\.')
         else:
             logging.error('Error: num must be <= 4')
-
+            
         matches = re.findall(regex, sentences[i])
         [word_end_dot.append(x) for x in matches]
 
     # Get Count of Words ending with a dot (returns dictionary)
     cnt_wrds_end_dot = Counter(word_end_dot)
-
+    
     # Get DataFrame Of Results
     df = pd.DataFrame(cnt_wrds_end_dot, index=['cnt']).transpose()
 
@@ -137,26 +96,26 @@ def get_tokens_end_dot(data, num, dir_output, project_folder,
 
 
 @my_timeit
-def train_nltk_sentence_tokenizer(paragraphs, print_abbrevs=False):
-    """
-    Function to train NLTK PunctSentTokenizer Class on unique body of text.
-
-    Supposed to work better than out of box sent tokenizer
-
+def train_nltk_sentence_tokenizer(paragraphs, print_abbrevs=False):       
+    """                                                                         
+    Function to train NLTK PunctSentTokenizer Class on unique body of text.     
+                                                                                
+    Supposed to work better than out of box sent tokenizer                      
+                                                                                
     Args:
     paragraphs : paragraphs on which to train tokenizer
     print_abbrevs : if you want to print the abbreviations that were
                     identified by the the trained tokenizer
-    Returns :
-    -------------
-    trained sentence tokenizer
-    """
+    Returns :                                                                   
+    -------------                                                               
+    trained sentence tokenizer                                                  
+    """                                                                         
     # Ensure that paragraphs are strings
     paragraphs = [str(x) for x in paragraphs]
     # Join all paragraphs into a single body of text
-    raw_text = ''.join(paragraphs)
-
-    # Instantiate & Train Tokenizer Training Class
+    raw_text = ''.join(paragraphs)                                              
+                                                                                
+    # Instantiate & Train Tokenizer Training Class                              
 
     # Manually Add abbreviations
     abbrevs = """llc., e.g., u.s., i.e., n.a., p.o., j.p., a.m., p.m., u.k.,
@@ -171,8 +130,8 @@ def train_nltk_sentence_tokenizer(paragraphs, print_abbrevs=False):
     # Finalize Tokenizer
     tokenizer = PunktSentenceTokenizer(trainer.get_params())
 
-    # Return Tokenizer
-    return tokenizer
+    # Return Tokenizer                                                          
+    return tokenizer                                                       
 
 
 
@@ -185,28 +144,28 @@ def get_sentences_max_num_tokens_chars(df_sentences, max_num_tokens,
     logging.info('---- Identifying sentences w/ max tokens {} chars {}'.format(
         max_num_tokens, max_num_chars))
 
-    # <= Max Num Tokens
-    sentences_min_tokens = [
-            x for x in df_sentences['sentences'].values
-            if len(word_tokenize(x)) <= max_num_tokens]
-
+    # <= Max Num Tokens                                                     
+    sentences_min_tokens = [                                                
+            x for x in df_sentences['sentences'].values                     
+            if len(word_tokenize(x)) <= max_num_tokens]                     
+    
     df_sent_min_toks = pd.DataFrame.from_dict(Counter(sentences_min_tokens),
-            orient='index').rename(columns={0:'Count'}).sort_values(by=
-                    'Count', ascending=False)
-
-    # <= Max Num Chars
-    sentences_min_chars = [
-            x for x in df_sentences['sentences'].values
-            if len(x) <= max_num_chars]
-
+            orient='index').rename(columns={0:'Count'}).sort_values(by=     
+                    'Count', ascending=False)                               
+                                                                            
+    # <= Max Num Chars                                                      
+    sentences_min_chars = [                                                 
+            x for x in df_sentences['sentences'].values                     
+            if len(x) <= max_num_chars]                                     
+    
     df_sent_min_chars = pd.DataFrame.from_dict(Counter(sentences_min_chars),
-            orient='index').rename(columns={0:'Count'}).sort_values(by=
-                    'Count', ascending=False)
-
-    # Logging
-    logging.info('---- Top sentences <= {} tokens \n{}'.format(
-        max_num_tokens, df_sent_min_toks.head()))
-    logging.info('---- Top sentences <= {} chars \n{}'.format(
+            orient='index').rename(columns={0:'Count'}).sort_values(by=     
+                    'Count', ascending=False)                               
+    
+    # Logging                                                               
+    logging.info('---- Top sentences <= {} tokens \n{}'.format(           
+        max_num_tokens, df_sent_min_toks.head()))                                           
+    logging.info('---- Top sentences <= {} chars \n{}'.format(            
         max_num_chars, df_sent_min_chars.head()))
 
     if write2file:
@@ -214,14 +173,14 @@ def get_sentences_max_num_tokens_chars(df_sentences, max_num_tokens,
         write2csv(df_sent_min_toks, dir_output, project_folder, filename)
         filename = 'sentences_max_number_chars.csv'
         write2csv(df_sent_min_chars, dir_output, project_folder, filename)
-
+    
     # Results
     return df_sent_min_toks, df_sent_min_chars
 
 
 @my_timeit
 def get_incorrectly_tokenized_sentences(df_sentences, dir_output,
-        project_folder, write2file):
+        project_folder, write2file):                                                            
     """
     Function that identifies possibly incorrectly tokenized sentences.
 
@@ -230,109 +189,109 @@ def get_incorrectly_tokenized_sentences(df_sentences, dir_output,
     and checks to see if the tokenized sentences end with them.
 
     df_sentences : DataFrame; tokenized sentences
-
+    
     Return
     --------
     DataFrame with sentences and tokens
 
     """
-    logging.info(f'---- Testing {df_sentences.shape[0]} tokenized sentences')
+    logging.info(f'---- Testing {df_sentences.shape[0]} tokenized sentences')   
     ###########################################################################
-    # Get Tokens Contain One or Two Dots
+    # Get Tokens Contain One or Two Dots                                       
     ###########################################################################
-    tokens_2_dots = get_tokens_end_dot(df_sentences, 2,
-            dir_output, project_folder, write2file)
-    tokens_3_dots = get_tokens_end_dot(df_sentences, 3,
-            dir_output, project_folder, write2file)
-    tokens_n_dots = get_list_words_end_dot_provided()
+    tokens_2_dots = get_tokens_end_dot(df_sentences, 2,          
+            dir_output, project_folder, write2file)                             
+    tokens_3_dots = get_tokens_end_dot(df_sentences, 3,          
+            dir_output, project_folder, write2file)                             
+    tokens_n_dots = get_list_words_end_dot_provided()                    
     tokens_all_dots = list(tokens_2_dots.keys()) + list(tokens_3_dots.keys()) +\
-            tokens_n_dots
-    logging.info('---- Tokens to search for at end of sentence => {}'.format(
-        tokens_all_dots))
+            tokens_n_dots                                                      
+    logging.info('---- Tokens to search for at end of sentence => {}'.format(   
+        tokens_all_dots))                                                       
     logging.info('---- Searching for possibly incorrectly tokenized sentences')
 
     ##########################################################################
-    # Identify Sentences Ending In Dot Tokens
+    # Identify Sentences Ending In Dot Tokens                                                 
     ##########################################################################
     pkey_list = []
-    result_sentences = []
-    result_token = []
-
-    # Iterate Sentences
+    result_sentences = []                                                       
+    result_token = []                                                           
+                                                                                
+    # Iterate Sentences                                                         
     for i in tqdm(range(df_sentences.shape[0])):
-        pkey = df_sentences['accession_num'].values.tolist()[i]
-        sent = df_sentences['sentences'].values.tolist()[i]
-
-        # Tokenize Sentence
+        pkey = df_sentences['accession#'].values.tolist()[i]
+        sent = df_sentences['sentences'].values.tolist()[i]                               
+        
+        # Tokenize Sentence                                                     
         tokens = word_tokenize(sent)
         num_toks = 3
         if len(tokens) >= num_toks:
-            try:
-                if ''.join(tokens[-2] + tokens[-1]) in tokens_all_dots:
+            try:                                                                    
+                if ''.join(tokens[-2] + tokens[-1]) in tokens_all_dots:             
                     pkey_list.append(pkey)
-                    result_sentences.append(sent)
-                    result_token.append(tokens[-2] + tokens[-1])
-            except IndexError:
-                pass
-
+                    result_sentences.append(sent)                                   
+                    result_token.append(tokens[-2] + tokens[-1]) 
+            except IndexError:                                                      
+                pass                                                                
+                                                                                
     df_results = pd.DataFrame({
-        'accession_num':pkey_list,
+        'accession#':pkey_list,
         'sentences': result_sentences,
         'tokens':result_token})
-
+    
     df_tok_frequencey = pd.DataFrame.from_dict(Counter(result_token),
             orient='index')
 
     if write2file:
         filename = 'sentences_incorrectly_tokenized.csv'
-        write2csv(df_results, dir_output, project_folder, filename)
+        write2csv(df_results, dir_output, project_folder, filename) 
         filename = 'sentences_incorrectly_tokenized_token_frequency.csv'
-        write2csv(df_tok_frequencey, dir_output, project_folder, filename)
-
+        write2csv(df_tok_frequencey, dir_output, project_folder, filename) 
+    
     ###########################################################################
     # Return Results
     ###########################################################################
     logging.info('---- Number of possible eroneous sentences => {}'.
-        format(df_results.shape[0]))
-    logging.info('---- Pct of sentences => {}%'.format(
-        round((df_results.shape[0] / df_sentences.shape[0])*100,2)))
-
+        format(df_results.shape[0]))                           
+    logging.info('---- Pct of sentences => {}%'.format(                         
+        round((df_results.shape[0] / df_sentences.shape[0])*100,2))) 
+    
     # Return Results
     return df_results
 
 
 @my_timeit
-def tokenizer_quality_control(df_sentences, max_num_tokens, max_num_chars,
-        dir_output, project_folder, write2file):
-    """
-    Function to check the quality of the sentence tokenizer.
-
-    Args:
-        df_sentences: DataFrame; Contains rows w/ sentences
-        max_num_tokens: Int; Identify sentences <= max num tokens
-        max_num_chars: Int; Identify sentences <= max num chars
-        dir_output: String; output directory
-        project_folder: String;
-        write2file: Boolean
-
-    Return :
-        Returns a dataframe with the sentences of interest & a report with
-        metrics on the quality of the tokenization
-
-    """
-    logging.info(f'---- Testing {df_sentences.shape[0]} tokenized sentences')
-
-    # Get Sentences <= Min Number Tokens or Chars
+def tokenizer_quality_control(df_sentences, max_num_tokens, max_num_chars,      
+        dir_output, project_folder, write2file):                                
+    """                                                                         
+    Function to check the quality of the sentence tokenizer.                    
+                                                                                
+    Args:                                                                       
+        df_sentences: DataFrame; Contains rows w/ sentences                     
+        max_num_tokens: Int; Identify sentences <= max num tokens               
+        max_num_chars: Int; Identify sentences <= max num chars                 
+        dir_output: String; output directory                                    
+        project_folder: String;                                                 
+        write2file: Boolean                                                     
+                                                                                
+    Return :                                                                    
+        Returns a dataframe with the sentences of interest & a report with      
+        metrics on the quality of the tokenization                              
+                                                                                
+    """                                                                         
+    logging.info(f'---- Testing {df_sentences.shape[0]} tokenized sentences')   
+                                                                                
+    # Get Sentences <= Min Number Tokens or Chars                               
     df_sent_min_toks, df_sent_min_chars =\
-            get_sentences_max_num_tokens_chars(df_sentences,
-                    3, 10, dir_output, project_folder, write2file)
-
-    # Sentences ending in dot & end of sentence
-    df_sent_end_dot_toks = get_incorrectly_tokenized_sentences(
-            df_sentences, dir_output, project_folder, write2file)
-
-    # Return Results
-    return df_sent_min_toks, df_sent_min_chars, df_sent_end_dot_toks
+            get_sentences_max_num_tokens_chars(df_sentences,          
+                    3, 10, dir_output, project_folder, write2file)              
+                                                                                
+    # Sentences ending in dot & end of sentence                                 
+    df_sent_end_dot_toks = get_incorrectly_tokenized_sentences(       
+            df_sentences, dir_output, project_folder, write2file)               
+                                                                                
+    # Return Results                                                            
+    return df_sent_min_toks, df_sent_min_chars, df_sent_end_dot_toks 
 
 
 @my_timeit
@@ -345,24 +304,24 @@ def get_paragraphs_for_incorrectly_tokenized_sentences(
         df_sentences:
 
     """
-
+    
     # Get Primary Keys for Incorrectly Tokenized Sentences
-    pkeys = df_sentences['accession_num'].values
+    pkeys = df_sentences['accession#'].values
 
     # Get Paragraphs
-    df_paragraphs = data.merge(df_sentences, left_on='accession_num',
-            right_on='accession_num').rename(columns={'principal_risk':
+    df_paragraphs = data.merge(df_sentences, left_on='accession#',
+            right_on='accession#').rename(columns={'principal_risk':
                 'paragraphs'})
 
     if write2file:
         filename = 'incurrectly_tokenized_paragraphs.csv'
         write2csv(df_paragraphs, dir_output, project_folder, filename)
-
-    # Return Results
+    
+    # Return Results                                                            
     return df_paragraphs
 
 
-@my_timeit
+@my_timeit                                                                      
 def sentence_segmenter(data, para_col_name, pkey_col_name, mode,
         tokenizer, sample_pct, max_num_tokens, max_num_chars,
         dir_output, project_folder, write2file, iteration=None):
@@ -471,7 +430,7 @@ def sentence_segmenter(data, para_col_name, pkey_col_name, mode,
                         df_sentences, max_num_tokens, max_num_chars,            
                         dir_output, project_folder, write2file)                 
         # Get Paragraphs For Incorrectly Tokenized Sentences                    
-        df_paragraphs_incorrect=\
+        df_paragraphs_incurrect=\
                 get_paragraphs_for_incorrectly_tokenized_sentences(   
                         data, df_incorrect_sentences, dir_output,               
                         project_folder, write2file)                             
@@ -485,21 +444,16 @@ def sentence_segmenter(data, para_col_name, pkey_col_name, mode,
         else:                                                                   
             filename=f'sentences_tokenized_sample_pct_{sample_pct}.csv'         
         write2csv(df_sentences, dir_output, project_folder, filename)           
+                                                                                
+    # Return Results                                                            
+    return df_sentences 
 
-    if mode == 'Debug' or mode == 'debug':                                      
-        # Reset Index On DataFrames
-        df_sent_min_toks.reset_index(inplace=True)
-        df_sent_min_chars.reset_index(inplace=True)
-        df_incorrect_sentences = df_incorrect_sentences[['accession_num']]
-        df_paragraphs_incorrect = df_paragraphs_incorrect[['accession_num']]
-            
-        # Return Results                                                            
-        return df_sentences, df_sent_min_toks, df_sent_min_chars, df_incorrect_sentences,\
-                df_paragraphs_incorrect
 
-    else:
-        return df_sentences
-        
+
+
+
+
+
 
 
 
