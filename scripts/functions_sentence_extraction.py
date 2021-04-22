@@ -47,7 +47,7 @@ import functions_sentence_extraction as m_sent_extr
 ###############################################################################
 
 @my_timeit
-def create_pkey(df, colname):
+def create_pkey(df, colname, pk_name, table_name):
     """
     Function to create sentence primary key, which is a function of the accession number
     and count of sentence.
@@ -66,8 +66,11 @@ def create_pkey(df, colname):
         else:
             count = 1
             pkey.append(count)
-    # Add Primary Key To DataFrame
-    df['sent_pkey'] = pkey
+    # Add Primary Key To DataFrame (accession_num + sent key)
+    df[pk_name] = [str(x) + '-' + str(y) for x, y in zip(
+        df[colname].values, pkey)]
+    # Logging
+    logging.info(f'Primary key created for => {table_name}')
     # Return df
     return df
 

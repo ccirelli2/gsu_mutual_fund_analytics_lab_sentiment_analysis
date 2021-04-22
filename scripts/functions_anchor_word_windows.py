@@ -3,8 +3,6 @@
 # Import Python Libraries
 ################################################################################
 import logging
-import dataiku
-from dataiku import pandasutils as pdu
 import os
 import sys
 import pandas as pd
@@ -24,6 +22,12 @@ from nltk.stem import PorterStemmer
 logging.basicConfig(level=logging.INFO)
 pd.set_option('display.max_columns', None)
 pd.set_option('display.max_rows', None)
+
+###############################################################################
+# Import Project Modules
+###############################################################################
+from functions_utility import *
+from functions_decorators import *
 
 
 ###############################################################################
@@ -118,7 +122,7 @@ def get_word_window(accession_num, sentence_pkey, sentence, anchor_word,
     # Get Window For Each Instance of Anchor Word in Sentence
     ###########################################################################
     results_dict={
-        'accession_num':[], 'sentence_pkey':[], 'sentences':[],
+        'accession_num':[], 'sent_pkey':[], 'sentences':[],
         'sentences_tok':[], 'anchor_word_pos':[], 'window_left':[],
         'anchor_word':[], 'window_right':[]}
 
@@ -133,7 +137,7 @@ def get_word_window(accession_num, sentence_pkey, sentence, anchor_word,
         window_right=sent_tokens[pos+1 : pos_right]
         # Add Results to Results Dictionary
         results_dict['accession_num'].append(accession_num)
-        results_dict['sentence_pkey'].append(sentence_pkey)
+        results_dict['sent_pkey'].append(sentence_pkey)
         results_dict['sentences'].append(sentence)
         results_dict['sentences_tok'].append(','.join(sent_tokens))
         results_dict['anchor_word_pos'].append(pos)
@@ -152,7 +156,7 @@ def get_word_window(accession_num, sentence_pkey, sentence, anchor_word,
     return df_results
 
 
-
+@my_timeit
 def get_anchor_word_window_by_sent(data, anchor_word_source, window_width,
         dir_output, project_folder, write2file):
     """

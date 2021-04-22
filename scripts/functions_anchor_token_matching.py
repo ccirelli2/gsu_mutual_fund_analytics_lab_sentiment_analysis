@@ -86,7 +86,7 @@ def clean_tok_sentence(sent, lemmatize):
 
 @my_timeit
 def get_sentences_matching_tokens(                                              
-        data_original, tokens, dir_output, project_folder,                      
+        data_original, tokens, token_type, dir_output, project_folder,                      
         write2file, quality_control=False, lemmatize=False, iteration=None):    
     """                                                                         
     Identify sentences that contain the list of input tokens.                     
@@ -209,7 +209,15 @@ def get_sentences_matching_tokens(
     # Merge df_tk_matchs w/ data_lim                                            
     df_final = pd.merge(data_lim, tk_matches_lim, left_on='sent_pkey',          
             right_on='sent_pkey')                                               
-                                                                                
+    
+    ########################################################################### 
+    # Write Output                       
+    ########################################################################### 
+    if write2file:
+        filename=f'match_sentences_anchor_toks_{token_type}.csv'
+        write2csv(df_final, dir_output, project_folder, filename)
+
+
     if quality_control:                                                         
         logging.info(f'---- dim unverified matches before => {data_lim.shape}') 
         logging.info(f'---- dim unverified matches after => {tk_matches.shape}')
