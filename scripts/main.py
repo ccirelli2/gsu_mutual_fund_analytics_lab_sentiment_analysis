@@ -79,7 +79,7 @@ import functions_anchor_token_matching as m_anchor_toks
 import functions_irregular_token_conditions as m_irreg_cond
 import functions_anchor_word_windows as m_windows
 import functions_get_mod_words_by_anchor_window as m_mod
-
+import functions_calculate_sentiment_scores as m_scoring
 
 ###############################################################################
 # Python Package Settings 
@@ -119,6 +119,7 @@ mode='run'
 tokenizer='custom'
 pkey_col_name='accession_num'
 para_col_name='principal_risks'
+mod_token_names=['uncertain', 'degree', 'negator', 'modal']
 
 # Sentence Extraction Debug
 max_num_tokens=3
@@ -270,7 +271,6 @@ def get_sentiment_score(data, para_col_name, pkey_col_name, mode, tokenizer,
                     sent_dict[['TokensClean', 'Score']], left_on='anchor_word',
                     right_on='TokensClean', how='left').drop(
                             'TokensClean', axis=1) 
-    
     # Negative
     df_windows_neg_join_mods=df_windows_neg.merge(
             df_neg_mod_all, left_on='window_pkey', right_on='window_pkey',
@@ -294,10 +294,13 @@ def get_sentiment_score(data, para_col_name, pkey_col_name, mode, tokenizer,
         write2csv(df_windows_pos_join_mods, dir_output, project_folder,
                 'final_prescore_word_window_legal.csv')
     
-
     ###########################################################################
-    # Calculate Sentiment Score 
+    # Calculate Word Window Sentiment Score 
     ###########################################################################
+    
+    df_windows_pos_sent_score=m_scoring.convert_list_mod_toks_scores(
+            df_windows_pos_join_mods, sent_dict, 'positive',
+            mod_token_names, write2file, dir_output, project_folder)
     
 
 ###############################################################################
