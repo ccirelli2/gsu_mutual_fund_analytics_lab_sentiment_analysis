@@ -37,4 +37,7 @@
 	window left	if,you,hold,your,shares
 	anchor word	class
 	window right	a,class,t,class,b
-
+5. Parameter Names: They are hard coded in the main.py script.  If, for instance, the dictionary column names are changed or added to
+   (ex: an additional modifying token category were to be added) the paramter names would need to be updated.
+   
+  
