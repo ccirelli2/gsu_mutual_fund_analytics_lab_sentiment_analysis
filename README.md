@@ -15,11 +15,17 @@
 
 
 ### Pending Code Enhancements:
-1. Update sentiment dictionary to comply with the format of the sentiment dictionary found in the data folder.
-2. Address the issue that the code does not distinguish between paragraphs and headings.
-3. Create a function that creates a paragraph primary key if one does not exist in the dataframe that the user passes to the main function.
-4. Word windows include single letter values as opposed to complete words.  Could be something
-   to address in how we define a token.
+1. Sentiment Dictionary: Needs to be updated to incorporate the most recent tokens.
+
+2. Headings: Address the issue that the code does not distinguish between paragraphs and headings.
+
+3. Paragraph Primary Key:
+	- It is assumed that the user will have a primary key associated with the paragraphs that are input into the function.
+	- If one is not provided, then a function should be created to automatically create one. 
+
+4. Token Size threshold:  Presently, the code does not incorporate a threshold on the number of characters a token may contain
+   	in order to be included in a tokenized sentence.  Below is an example of a word window that includes single letter tokens
+	that are counted as words. 
 
 	Example From Test Dataset
 	accession_num	0000035315-10-000049
@@ -37,4 +43,13 @@
 	window left	if,you,hold,your,shares
 	anchor word	class
 	window right	a,class,t,class,b
+	
+5. Parameter Names: They are hard coded in the main.py script.  If, for instance, the dictionary column names are changed or added to
+   (ex: an additional modifying token category were to be added) the paramter names would need to be updated.
 
+6. Scoring Function:
+	- Needs to be reviewed and approved.  Starting on row 99 the code calculates the product of the modifying word scores.
+	- The code addresses when there is an even and odd number of negative scores, which could flip the polarity of the sentiment.
+	- This particular portion of the code should be reviewed and approved by the individual(s) responsible for the intent of the
+	  sentiment calculation.
+  
