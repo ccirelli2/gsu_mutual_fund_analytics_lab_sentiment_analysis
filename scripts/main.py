@@ -155,11 +155,6 @@ def get_sentiment_score(data, para_col_name, pkey_col_name, mode, tokenizer,
             mode, tokenizer, sample_pct, max_num_tokens, max_num_chars,
             dir_output, project_folder, write2file=False)
    
-    # Create Sentence Primary Key
-    sentences=create_pkey(df=sentences, colname='accession_num',
-            pk_name='sent_pkey', table_name='sentence_tokenization',
-            write2file=write2file, dir_output=dir_output,
-            project_folder=project_folder)
     
     # Get Anchor Tokens
     tokens_positive = sent_dict[sent_dict['TokenType'] =='Positive'][
@@ -168,6 +163,7 @@ def get_sentiment_score(data, para_col_name, pkey_col_name, mode, tokenizer,
             'TokensClean'].values.tolist()
     tokens_legal = sent_dict[sent_dict['TokenType'] =='Legal'][
             'TokensClean'].values.tolist()
+
 
     ###########################################################################
     # Get Sentences Matching Anchor Tokens
@@ -185,6 +181,7 @@ def get_sentiment_score(data, para_col_name, pkey_col_name, mode, tokenizer,
             sentences, tokens_legal, 'legal', dir_results, project_folder,
             write2file)
 
+
     ###########################################################################
     # Apply Irregular Token Conditions 
     ###########################################################################
@@ -197,6 +194,7 @@ def get_sentiment_score(data, para_col_name, pkey_col_name, mode, tokenizer,
     sent_legal_tokens, legal_adj=\
             m_irreg_cond.execute_irregular_token_condition_function(
                     sent_pos_tokens, sent_dict, token_type='Legal')
+
 
     ###########################################################################
     # Get Anchor Word Windows & Create Window Primary Key
@@ -216,6 +214,7 @@ def get_sentiment_score(data, para_col_name, pkey_col_name, mode, tokenizer,
             anchor_word_source='Legal', window_width=5,
             dir_output=dir_results, project_folder=project_folder,
             write2file=write2file)
+
 
     ###########################################################################
     # Get Modifying Words Within Anchor Word Windows  
@@ -260,6 +259,7 @@ def get_sentiment_score(data, para_col_name, pkey_col_name, mode, tokenizer,
             df_legal_mod_degree, df_legal_mod_uncert, 8, 'legal', write2file,
             dir_output, project_folder)
 
+
     ###########################################################################
     # Left Join Modifying Tokens & Sentiment Scores 
     ###########################################################################
@@ -293,7 +293,12 @@ def get_sentiment_score(data, para_col_name, pkey_col_name, mode, tokenizer,
                 'final_prescore_word_window_negative.csv')
         write2csv(df_windows_pos_join_mods, dir_output, project_folder,
                 'final_prescore_word_window_legal.csv')
+    
 
+    ###########################################################################
+    # Calculate Sentiment Score 
+    ###########################################################################
+    
 
 ###############################################################################
 # Execution 

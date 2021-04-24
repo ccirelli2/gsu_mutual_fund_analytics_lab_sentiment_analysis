@@ -435,7 +435,13 @@ def sentence_segmenter(data, para_col_name, pkey_col_name, mode,
         'sentences': result_sentences,                                          
         'num_toks' : result_num_toks_sentence,
         'num_chars': result_num_chars_sentence})                                
-    
+   
+    # Add Sentence Primary Key
+    df_sentences=create_pkey(df_sentences, colname='accession_num',
+            pk_name='sent_pkey', table_name='sentence_tokenization',
+            write2file=write2file, dir_output=dir_output,
+            project_folder=project_folder)
+
     ########################################################################### 
     # Run Test Diagnostics On Tokenized Sentences                                   
     ###########################################################################
