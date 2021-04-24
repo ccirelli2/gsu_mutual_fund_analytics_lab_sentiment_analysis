@@ -45,6 +45,41 @@ from functions_decorators import *
 # Function
 ###############################################################################
 
+
+def create_pkey(df, colname, pk_name, table_name, write2file, dir_output,
+        project_folder):
+    """
+    Function to create sentence primary key, which is a function of the accession number
+    and count of sentence.
+    """
+    # Create Primary Key Object.  Initialize = 1
+    pkey = [1]
+    count = 1
+    # Iterate Column values as pair
+    for val1, val2 in zip(df[colname].values.tolist(),
+                          df[colname].values.tolist()[1:]):
+        # If Value 2 == Value 1, Increase Count and append to pkey list.
+        if val2 == val1:
+            count += 1
+            pkey.append(count)
+        # When Value 2 != Value 1 then reset count & append.
+        else:
+            count = 1
+            pkey.append(count)
+    # Add Primary Key To DataFrame (accession_num + sent key)
+    df[pk_name] = [str(x) + '-' + str(y) for x, y in zip(
+        df[colname].values, pkey)]
+    
+    if write2file:
+        filename = f'{table_name}_add_pkey.csv'
+        write2csv(df, dir_output, project_folder, filename)
+
+    # Logging
+    logging.info(f'Primary key created for => {table_name}')
+    # Return df
+    return df
+
+
 @my_timeit
 def conn_mysql(password, database):                                             
     conn=mysql.connector.connect(
@@ -57,6 +92,7 @@ def conn_mysql(password, database):
     return conn, my_cursor 
 
 @my_timeit
+
 def load_mysql_data(conn, query):
     return pd.read_sql(query, conn)
 

@@ -34,6 +34,31 @@ from functions_decorators import *
 # Functions
 ###############################################################################
 
+def get_window_word_count(df):                                              
+    """
+    Function to get count of words in window left + window right
+    Args:
+        df: DataFrame;
+            Contains word windows.
+
+    Returns:
+        df with new column for window count
+
+    """
+    # Separate Windows 
+    window_left=df['window_left'].values                                    
+    window_right=df['window_right'].values                                  
+    # Get Count of Words in Window.  When x.split(',') is None return 0
+    window_left_word_cnt=list(map(lambda x: len(x.split(',')) if x.split(',') else 0,
+        window_left))
+    window_right_word_cnt=list(map(lambda x: len(x.split(',')) if x.split(',') else 0,
+        window_right))
+    # Use Numpy Add to Add Cnt Arrays
+    window_word_cnt=np.add(window_left_word_cnt, window_right_word_cnt)                        
+    # Add Column to DataFrame
+    df['window_word_cnt'] = window_word_cnt                                        
+    return df 
+
 def clean_sentence(sent):
     """
     Function that removes punctuation from sentence, tokenizes sent
@@ -213,14 +238,38 @@ def get_anchor_word_window_by_sent(data, anchor_word_source, window_width,
             frames.append(anchor_window)
 
     ###########################################################################
-    # Concat Results & Write to file
+    # Concat Results | Add Primary Key | Add Window Count | Write2file
     ###########################################################################
+    
+    # Concat Results
     df_concat = pd.concat(frames)
-    #df_concat.drop('sentences', axis=1, inplace=True)
+    
+    
+    # Generate Primary Key
+    df_concat=create_pkey(df_concat, colname='sent_pkey',
+            pk_name='window_pkey',
+            table_name=anchor_word_source.lower() + '_windows',
+            write2file=False, dir_output=dir_output,
+            project_folder=project_folder)
+    
+    # Get Window Word Count
+    df_concat=get_window_word_count(df_concat)
+    
+    # Write2file
     if write2file:
         filename=f'{anchor_word_source}_anchor_words_windows_size_{window_width}.csv'
         write2csv(df_concat, dir_output, project_folder, filename)
 
     # Return Results
     return df_concat
+
+
+
+
+
+
+
+
+
+
 

@@ -23,8 +23,9 @@ Model Parameters:
         the text for which the user would like generate a sentiment score.
 
 Data:
-    The user can run the sentiment function on test data that can be found at
-    dir_repo/data/test_data.csv.  The delimeter for this file is |
+    Test: The user can run the sentiment function on test data that
+    can be found at dir_repo/data/test_data.csv.  The delimeter for
+    this file is '|'.
 
 Output files:
     Consolidated modifying token table csv separator "|".  Values within
@@ -42,6 +43,7 @@ import logging
 import os
 import sys
 import pandas as pd
+import numpy as np
 import inspect
 import time
 from tqdm import tqdm
@@ -58,7 +60,7 @@ from dotenv import load_dotenv; load_dotenv()
 ###############################################################################
 # Declare Directories
 ###############################################################################
-dir_repo = os.getenv("ROOTDIR") # can replace with path2 this repo.
+dir_repo = os.getenv("ROOTDIR") # env variable that points to root of this repo 
 dir_scripts = os.path.join(dir_repo, 'scripts')
 dir_results = os.path.join(dir_repo, 'results')
 dir_reports = os.path.join(dir_repo, 'reports')
@@ -151,11 +153,13 @@ def get_sentiment_score(data, para_col_name, pkey_col_name, mode, tokenizer,
     ###########################################################################
     sentences=m_sent_extr.sentence_segmenter(data, para_col_name, pkey_col_name,
             mode, tokenizer, sample_pct, max_num_tokens, max_num_chars,
-            dir_output, project_folder, write2file)
+            dir_output, project_folder, write2file=False)
    
     # Create Sentence Primary Key
-    sentences=m_sent_extr.create_pkey(df=sentences, colname='accession_num',
-            pk_name='sent_pkey', table_name='sentence_tokenization')
+    sentences=create_pkey(df=sentences, colname='accession_num',
+            pk_name='sent_pkey', table_name='sentence_tokenization',
+            write2file=write2file, dir_output=dir_output,
+            project_folder=project_folder)
     
     # Get Anchor Tokens
     tokens_positive = sent_dict[sent_dict['TokenType'] =='Positive'][
@@ -202,25 +206,16 @@ def get_sentiment_score(data, para_col_name, pkey_col_name, mode, tokenizer,
             anchor_word_source='Positive', window_width=5,
             dir_output=dir_results, project_folder=project_folder,
             write2file=write2file)
-    df_windows_pos=m_sent_extr.create_pkey(
-            df=df_windows_pos, colname='sent_pkey', pk_name='window_pkey',
-            table_name='positive_windows')
     # Negative
     df_windows_neg=m_windows.get_anchor_word_window_by_sent(sent_pos_tokens,
             anchor_word_source='Negative', window_width=5,
             dir_output=dir_results, project_folder=project_folder,
             write2file=write2file)
-    df_windows_neg=m_sent_extr.create_pkey(
-            df=df_windows_neg, colname='sent_pkey', pk_name='window_pkey',
-            table_name='negative_window')
     # Legal 
     df_windows_legal=m_windows.get_anchor_word_window_by_sent(sent_pos_tokens,
             anchor_word_source='Legal', window_width=5,
             dir_output=dir_results, project_folder=project_folder,
             write2file=write2file)
-    df_windows_legal=m_sent_extr.create_pkey(
-            df=df_windows_legal, colname='sent_pkey', pk_name='window_pkey',
-            table_name='legal_window')
 
     ###########################################################################
     # Get Modifying Words Within Anchor Word Windows  
@@ -236,7 +231,7 @@ def get_sentiment_score(data, para_col_name, pkey_col_name, mode, tokenizer,
             sent_dict, token_type="Uncertain")
     df_pos_mod_all=m_mod.group_mods_by_window_pkey(
             df_windows_pos, df_pos_mod_modal, df_pos_mod_negator,
-            df_pos_mod_degree, df_pos_mod_uncert, 7, 'positive', write2file,
+            df_pos_mod_degree, df_pos_mod_uncert, 8, 'positive', write2file,
             dir_output, project_folder)
     # Negative 
     df_neg_mod_modal=m_mod.identify_mod_tokens(df_windows_neg,
@@ -249,7 +244,7 @@ def get_sentiment_score(data, para_col_name, pkey_col_name, mode, tokenizer,
             sent_dict, token_type="Uncertain")
     df_neg_mod_all=m_mod.group_mods_by_window_pkey(
             df_windows_neg, df_neg_mod_modal, df_neg_mod_negator,
-            df_neg_mod_degree, df_neg_mod_uncert, 7, 'negative', write2file,
+            df_neg_mod_degree, df_neg_mod_uncert, 8, 'negative', write2file,
             dir_output, project_folder)
     # Legal 
     df_legal_mod_modal=m_mod.identify_mod_tokens(df_windows_legal,
@@ -262,11 +257,42 @@ def get_sentiment_score(data, para_col_name, pkey_col_name, mode, tokenizer,
             sent_dict, token_type="Uncertain")
     df_legal_mod_all=m_mod.group_mods_by_window_pkey(
             df_windows_legal, df_legal_mod_modal, df_legal_mod_negator,
-            df_legal_mod_degree, df_legal_mod_uncert, 7, 'legal', write2file,
+            df_legal_mod_degree, df_legal_mod_uncert, 8, 'legal', write2file,
             dir_output, project_folder)
 
-
-
+    ###########################################################################
+    # Left Join Modifying Tokens & Sentiment Scores 
+    ###########################################################################
+    # Positive
+    df_windows_pos_join_mods=df_windows_pos.merge(
+            df_pos_mod_all, left_on='window_pkey', right_on='window_pkey',
+            how='left').merge(
+                    sent_dict[['TokensClean', 'Score']], left_on='anchor_word',
+                    right_on='TokensClean', how='left').drop(
+                            'TokensClean', axis=1) 
+    
+    # Negative
+    df_windows_neg_join_mods=df_windows_neg.merge(
+            df_neg_mod_all, left_on='window_pkey', right_on='window_pkey',
+            how='left').merge(
+                    sent_dict[['TokensClean', 'Score']], left_on='anchor_word',
+                    right_on='TokensClean', how='left').drop(
+                            'TokensClean', axis=1)
+    # Legal
+    df_windows_legal_join_mods=df_windows_legal.merge(
+            df_legal_mod_all, left_on='window_pkey', right_on='window_pkey',
+            how='left').merge(
+                    sent_dict[['TokensClean', 'Score']], left_on='anchor_word',
+                    right_on='TokensClean', how='left').drop(
+                            'TokensClean', axis=1)
+    # Write2file
+    if write2file:
+        write2csv(df_windows_pos_join_mods, dir_output, project_folder,
+                'final_prescore_word_window_positive.csv')
+        write2csv(df_windows_neg_join_mods, dir_output, project_folder,
+                'final_prescore_word_window_negative.csv')
+        write2csv(df_windows_pos_join_mods, dir_output, project_folder,
+                'final_prescore_word_window_legal.csv')
 
 
 ###############################################################################
