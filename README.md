@@ -56,4 +56,6 @@
 
 7. Documentation
 	- main.py: requires documentation on mode, tokenizer and quality control parameters
- 
+
+8. setup.py
+	- needs to include input data type, environment setup, directory setup, etc.
