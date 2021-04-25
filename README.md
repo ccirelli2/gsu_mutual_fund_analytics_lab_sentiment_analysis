@@ -52,4 +52,4 @@
 	- The code addresses when there is an even and odd number of negative scores, which could flip the polarity of the sentiment.
 	- This particular portion of the code should be reviewed and approved by the individual(s) responsible for the intent of the
 	  sentiment calculation.
-  
+ 	- Note that between lines 148 and lines 152 we take the product of all of the normalized modifying words but we do not address if all are negative, which would flip the polarity to positive. 
