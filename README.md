@@ -53,3 +53,7 @@
 	- This particular portion of the code should be reviewed and approved by the individual(s) responsible for the intent of the
 	  sentiment calculation.
  	- Note that between lines 148 and lines 152 we take the product of all of the normalized modifying words but we do not address if all are negative, which would flip the polarity to positive. 
+
+7. Documentation
+	- main.py: requires documentation on mode, tokenizer and quality control parameters
+ 
