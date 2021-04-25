@@ -154,7 +154,7 @@ def get_sentiment_score(data, para_col_name, pkey_col_name, mode, tokenizer,
     ###########################################################################
     sentences=m_sent_extr.sentence_segmenter(data, para_col_name, pkey_col_name,
             mode, tokenizer, sample_pct, max_num_tokens, max_num_chars,
-            dir_output, project_folder, write2file=False)
+            dir_output, project_folder, write2file=True)
    
     
     # Get Anchor Tokens
@@ -164,7 +164,6 @@ def get_sentiment_score(data, para_col_name, pkey_col_name, mode, tokenizer,
             'TokensClean'].values.tolist()
     tokens_legal = sent_dict[sent_dict['TokenType'] =='Legal'][
             'TokensClean'].values.tolist()
-
 
     ###########################################################################
     # Get Sentences Matching Anchor Tokens
@@ -188,30 +187,30 @@ def get_sentiment_score(data, para_col_name, pkey_col_name, mode, tokenizer,
     ###########################################################################
     sent_pos_tokens, pos_adj=\
             m_irreg_cond.execute_irregular_token_condition_function(
-                    sent_pos_tokens, sent_dict, token_type='Positive')
+                    sent_pos_tokens, sent_dict, 'Positive',
+                    write2file, dir_output, project_folder)
     sent_neg_tokens, neg_adj=\
             m_irreg_cond.execute_irregular_token_condition_function(
-                    sent_pos_tokens, sent_dict, token_type='Negative')
+                    sent_neg_tokens, sent_dict, 'Negative',
+                    write2file, dir_output, project_folder)
     sent_legal_tokens, legal_adj=\
             m_irreg_cond.execute_irregular_token_condition_function(
-                    sent_pos_tokens, sent_dict, token_type='Legal')
+                    sent_legal_tokens, sent_dict, 'Legal',
+                    write2file, dir_output, project_folder)
 
 
     ###########################################################################
     # Get Anchor Word Windows & Create Window Primary Key
     ###########################################################################
-    # Positive 
     df_windows_pos=m_windows.get_anchor_word_window_by_sent(sent_pos_tokens,
             anchor_word_source='Positive', window_width=5,
             dir_output=dir_results, project_folder=project_folder,
             write2file=write2file)
-    # Negative
-    df_windows_neg=m_windows.get_anchor_word_window_by_sent(sent_pos_tokens,
+    df_windows_neg=m_windows.get_anchor_word_window_by_sent(sent_neg_tokens,
             anchor_word_source='Negative', window_width=5,
             dir_output=dir_results, project_folder=project_folder,
             write2file=write2file)
-    # Legal 
-    df_windows_legal=m_windows.get_anchor_word_window_by_sent(sent_pos_tokens,
+    df_windows_legal=m_windows.get_anchor_word_window_by_sent(sent_legal_tokens,
             anchor_word_source='Legal', window_width=5,
             dir_output=dir_results, project_folder=project_folder,
             write2file=write2file)
@@ -259,10 +258,9 @@ def get_sentiment_score(data, para_col_name, pkey_col_name, mode, tokenizer,
             df_windows_legal, df_legal_mod_modal, df_legal_mod_negator,
             df_legal_mod_degree, df_legal_mod_uncert, 8, 'legal', write2file,
             dir_output, project_folder)
-
-
+   
     ###########################################################################
-    # Left Join Modifying Tokens & Sentiment Scores 
+    # Left Join Modifying Tokens & Token Sentiment Scores 
     ###########################################################################
     # Positive
     df_windows_pos_join_mods=df_windows_pos.merge(
@@ -271,6 +269,7 @@ def get_sentiment_score(data, para_col_name, pkey_col_name, mode, tokenizer,
                     sent_dict[['TokensClean', 'Score']], left_on='anchor_word',
                     right_on='TokensClean', how='left').drop(
                             'TokensClean', axis=1) 
+    
     # Negative
     df_windows_neg_join_mods=df_windows_neg.merge(
             df_neg_mod_all, left_on='window_pkey', right_on='window_pkey',
@@ -285,31 +284,94 @@ def get_sentiment_score(data, para_col_name, pkey_col_name, mode, tokenizer,
                     sent_dict[['TokensClean', 'Score']], left_on='anchor_word',
                     right_on='TokensClean', how='left').drop(
                             'TokensClean', axis=1)
-    # Write2file
-    if write2file:
-        write2csv(df_windows_pos_join_mods, dir_output, project_folder,
-                'final_prescore_word_window_positive.csv')
-        write2csv(df_windows_neg_join_mods, dir_output, project_folder,
-                'final_prescore_word_window_negative.csv')
-        write2csv(df_windows_pos_join_mods, dir_output, project_folder,
-                'final_prescore_word_window_legal.csv')
     
     ###########################################################################
-    # Calculate Word Window Sentiment Score 
+    # Calculate Window Lvl Sentiment Score 
     ###########################################################################
-    
-    df_windows_pos_sent_score=m_scoring.convert_list_mod_toks_scores(
+    df_windows_pos_sent_score=m_scoring.get_window_sentiment_score(
             df_windows_pos_join_mods, sent_dict, 'positive',
             mod_token_names, write2file, dir_output, project_folder)
-    
+    df_windows_neg_sent_score=m_scoring.get_window_sentiment_score(
+            df_windows_neg_join_mods, sent_dict, 'negative',
+            mod_token_names, write2file, dir_output, project_folder)
+    df_windows_legal_sent_score=m_scoring.get_window_sentiment_score(
+            df_windows_legal_join_mods, sent_dict, 'legal',
+            mod_token_names, write2file, dir_output, project_folder)
 
+
+    ###########################################################################
+    # Calculate Sentence Anchor Lvl Sentiment Score
+    ###########################################################################
+    df_sent_pos_sent_score=\
+            m_scoring.calculate_sentence_lvl_sentiment_score(
+                    df_windows_pos_sent_score, write2file, dir_output,
+                    project_folder, 'Positive')
+    df_sent_neg_sent_score=\
+            m_scoring.calculate_sentence_lvl_sentiment_score(
+                    df_windows_neg_sent_score, write2file, dir_output,
+                    project_folder, 'Negative')
+    df_sent_legal_sent_score=\
+            m_scoring.calculate_sentence_lvl_sentiment_score(
+                    df_windows_legal_sent_score, write2file, dir_output,
+                    project_folder, 'Legal')
+   
+    ###########################################################################
+    # Get Final Sentence & Paragraphc Scores
+    ###########################################################################
+    # Merge Anchor Lvl Sent Scores On Original Tokenized Sentences 
+    df_sent_score_final=sentences.merge(
+            df_sent_pos_sent_score, on=['accession_num', 'sent_pkey'],
+            how='left').merge(
+                    df_sent_neg_sent_score, on=['accession_num', 'sent_pkey'],
+                    how='left').merge(
+                            df_sent_legal_sent_score, on=['accession_num',
+                                'sent_pkey'], how='left').fillna(value=0)
+    # Calculate Final Sentence Score
+    df_sent_score_final['SentenceFinalScore']=df_sent_score_final[
+            ['SentenceFinalPositiveScore', 'SentenceFinalNegativeScore',
+             'SentenceFinalLegalScore']].sum(axis=1)
+    
+    # Calculate Final Paragraph Scores
+    df_paragraph_score_final=df_sent_score_final.groupby(
+            'accession_num').sum().rename(columns={
+                'SentenceFinalPositiveScore': 'ParagraphFinalPositiveScore',
+                'SentenceFinalNegativeScore': 'ParagraphFinalNegativeSCore',
+                'SentenceFinalLegalScore': 'ParagraphFinalLegalScore',
+                'SentenceFinalScore':'ParagraphFinalScore'})
+
+
+    ###########################################################################
+    # Write Sentence & Paragraphs Scores To Directory & Return 
+    ###########################################################################
+    # Write2file
+    if write2file:
+        # Final Sentence Scores
+        write2csv(
+                df_sent_score_final, os.path.join(dir_output, project_folder),
+                'sentence_sentiment_scores',
+                'final_sentence_sentiment_score.csv')
+        # Final Paragraph Score
+        subfolder=create_project_folder(                                         
+                dir_output=os.path.join(dir_output, project_folder),            
+                name='paragraph_sentiment_scores')       
+        dir_output=os.path.join(dir_output, project_folder)
+        write2csv(
+                df_paragraph_score_final, dir_output, subfolder,
+                'final_paragraph_sentiment_score.csv')
+    # Return
+    return df_paragraph_score_final, df_sent_score_final
+
+
+###############################################################################
 ###############################################################################
 # Execution 
 ###############################################################################
+###############################################################################
 
-df_sentences = get_sentiment_score(data, para_col_name, pkey_col_name, mode,
-    tokenizer, sample_pct, max_num_tokens, max_num_chars, sent_dict,
-    dir_results, project_folder, write2file)
+paragraph_scores, sentence_scores = get_sentiment_score(
+        data, para_col_name, pkey_col_name, mode, tokenizer, sample_pct,
+        max_num_tokens, max_num_chars, sent_dict, dir_results, project_folder,
+        write2file)
 
 
 

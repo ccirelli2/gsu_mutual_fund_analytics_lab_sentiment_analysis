@@ -249,7 +249,7 @@ def irregular_token_conditions(irregular_token, sent_tokens, window_direction,
 
 @my_timeit
 def execute_irregular_token_condition_function(data_matched_sent,
-        sentiment_dict, token_type):
+        sentiment_dict, token_type, write2file, dir_output, project_folder):
 
     # Subset dataframe to irregular tokens
     sentiment_dict_irreg=sentiment_dict[
@@ -366,6 +366,21 @@ def execute_irregular_token_condition_function(data_matched_sent,
         'window':window_list,
         'original_match_val':original_match_val,
         'new_match_val':new_match_val})
+
+    ########################################################################### 
+    # Write Output                       
+    ########################################################################### 
+    if write2file:
+        subfolder=create_project_folder(
+                dir_output=os.path.join(dir_output, project_folder),
+                name='irregular_token_conditions')
+        dir_output=os.path.join(dir_output, project_folder)
+        # Write rows columns affected
+        filename=f'rows_cols_affected_{token_type}.csv'
+        write2csv(df_row_col_affected, dir_output, subfolder, filename)
+        filename=f'sentence_tokens_after_conditions_{token_type}.csv'
+        write2csv(data_matched_sent, dir_output, subfolder, filename)
+
 
     # Return Original Matched Sentence DataFrame w/ New Assignments
     return data_matched_sent, df_row_col_affected

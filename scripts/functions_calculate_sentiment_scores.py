@@ -37,7 +37,7 @@ pd.set_option('display.max_rows', None)
 # ### Create Token Dictionary (Key = Token, Value = Score)
 
 @my_timeit
-def convert_list_mod_toks_scores(data, dict_sent, tok_type, mod_tok_names,
+def get_window_sentiment_score(data, dict_sent, tok_type, mod_tok_names,
         write2file, dir_output, project_folder):
     """
     Function translates matched anchor word and modifying tokens to scores.
@@ -51,7 +51,9 @@ def convert_list_mod_toks_scores(data, dict_sent, tok_type, mod_tok_names,
         
 
     """
-     
+    ########################################################################### 
+    # Create Score Converter: Token > Score
+    ########################################################################### 
     # Create Dictionary Key = Token, Value = Sentiment Score
     sent_converter={x:y for x,y in zip(dict_sent['TokensClean'].values,
         dict_sent['Score'].values)}
@@ -64,27 +66,33 @@ def convert_list_mod_toks_scores(data, dict_sent, tok_type, mod_tok_names,
     data['ScoreAnchorWordNormalized'] = data['ScoreAnchorWord'].values /\
             data['window_word_cnt'].values
 
-    # Iterate Modifying Token Columns ('uncertain', 'degree', 'negator', 'modal')
+    ########################################################################### 
+    # Iterate Modifying Token - Calculate Scores Single & Multiple Tokens 
+    ########################################################################### 
     for mod_tok in mod_tok_names:
 
         # New Column List
-        SCORELIST=[]
+        SCORELIST=[] 
         SCORECNT=[]
         SCOREPROD=[]
 
         # Iterate Rows of Each Column
         for values in data[mod_tok].values:
 
-            # If not empty string
+            # If modifying token found in cell
             if values:
-                # If values includes a comma
+                ###############################################################
+                # If only one token
+                ###############################################################
                 if ',' not in values:
-                    # Append To Score List For Single Token
+                    # Append Score, Score Count To Score Lists
                     SCORELIST.append(str(sent_converter[values]))
                     SCORECNT.append(1)
                     SCOREPROD.append(float(sent_converter[values]))
                 
+                ###############################################################
                 # Multiple tokens
+                ###############################################################
                 else:
                     # Split Tokens
                     tokens=values.split(',')
@@ -110,32 +118,45 @@ def convert_list_mod_toks_scores(data, dict_sent, tok_type, mod_tok_names,
                             SCOREPROD.append(np.prod(score_arr) * -1)
                         else:
                             SCOREPROD.append(np.prod(score_arr))
-                    # If Odd number scores
+                    # If Odd number scores no need to multiply by -1
                     else:
                         SCOREPROD.append(np.prod(score_arr))
 
-            # The value in the cell is null
+            # The value in the cell is null append zeros
             else:
                 SCORELIST.append(0)
                 SCORECNT.append(0)
                 SCOREPROD.append(0)
 
+        #######################################################################
         # Add Column to Original DataFrame
+        #######################################################################
         data[mod_tok + 'score_list'] = SCORELIST
         data[mod_tok + 'score_cnt'] = SCORECNT
         data[mod_tok + 'score_product'] = SCOREPROD
         
+        #######################################################################
         # Get Normalized Product Score
+        #######################################################################
         word_cnt = data['window_word_cnt'].values
-        data[mod_tok + 'score_norm'] = data[mod_tok + 'score_product'].values /\
-                                               data[mod_tok + 'score_cnt'].values
-    # Get Final Modifying Score By Multiplying Normalized Modifying Work Scores
-    data['ModifyingTokensProduct'] = np.nan_to_num(data['modalscore_norm'].values, nan=1) *\
-                                     np.nan_to_num(data['negatorscore_norm'].values, nan=1) *\
-                                     np.nan_to_num(data['degreescore_norm'].values, nan=1) *\
-                                     np.nan_to_num(data['uncertainscore_norm'].values, nan=1)
+        data[mod_tok + 'score_norm']=data[mod_tok + 'score_product'].values /\
+                                     data[mod_tok + 'score_cnt'].values
+
+    ###########################################################################
+    # Get Final Mod Score As Product of All Normalized Modifying Scores
+    ###########################################################################
+    data['ModifyingTokensProduct'] =\
+            np.nan_to_num(data['modalscore_norm'].values, nan=1) *\
+            np.nan_to_num(data['negatorscore_norm'].values, nan=1) *\
+            np.nan_to_num(data['degreescore_norm'].values, nan=1) *\
+            np.nan_to_num(data['uncertainscore_norm'].values, nan=1)
+    
+
+    ###########################################################################
     # Get Final Anchor Word Score
+    ###########################################################################
     anchor_word_final_score = []
+
     for modscore, anchorscore in zip(data['ModifyingTokensProduct'].values,
                                      data['ScoreAnchorWordNormalized'].values):
         # If Both Scores Negative
@@ -143,30 +164,55 @@ def convert_list_mod_toks_scores(data, dict_sent, tok_type, mod_tok_names,
             anchor_word_final_score.append((modscore * anchorscore) * -1)
         else:
             anchor_word_final_score.append((modscore * anchorscore))
-
+    
+    # Add to original dataset
     data['AnchorWordFinalScore'] = anchor_word_final_score
 
     # Write2file
     if write2file:
+        subfolder=create_project_folder(
+                dir_output=os.path.join(dir_output, project_folder),
+                name='window_sentiment_scores')
+        dir_output=os.path.join(dir_output, project_folder)
         filename=f'final_{tok_type}_anchor_word_window_sentiment_score.csv'
-        write2csv(data, dir_output, project_folder, filename)
+        write2csv(data, dir_output, subfolder, filename)
 
     # Return Data w/ New Columns
     return data
     
 
+@my_timeit
+def calculate_sentence_lvl_sentiment_score(df, write2file, dir_output,
+        project_folder, token_type):
+    """
+    Function to calculate sentence lvl sentiment score. 
+    Args:
+        df:
+        write2file:
+        dir_output:
+        project_folder:
+        name:
 
+    Returns:
+        
 
+    """
+    # Calculate Score
+    sent_lvl_score= df.groupby(['accession_num', 'sent_pkey'])[
+            'AnchorWordFinalScore'].sum().reset_index().rename(
+                    columns={'AnchorWordFinalScore':
+                        f'SentenceFinal{token_type}Score'})      
+    # Write to file
+    if write2file:
+       subfolder=create_project_folder(
+                dir_output=os.path.join(dir_output, project_folder),
+                name='sentence_sentiment_scores')
+       dir_output=os.path.join(dir_output, project_folder)
+       filename=f'sentence_sentiment_score_{token_type}.csv'
+       write2csv(sent_lvl_score, dir_output, subfolder, filename)
 
-
-
-
-
-
-
-
-
-
+    # return
+    return sent_lvl_score
 
 
 

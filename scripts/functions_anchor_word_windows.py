@@ -257,8 +257,12 @@ def get_anchor_word_window_by_sent(data, anchor_word_source, window_width,
     
     # Write2file
     if write2file:
+        subfolder=create_project_folder(
+                dir_output=os.path.join(dir_output, project_folder),
+                name='anchor_word_windows')
+        dir_output=os.path.join(dir_output, project_folder)
         filename=f'{anchor_word_source}_anchor_words_windows_size_{window_width}.csv'
-        write2csv(df_concat, dir_output, project_folder, filename)
+        write2csv(df_concat, dir_output, subfolder, filename)
 
     # Return Results
     return df_concat

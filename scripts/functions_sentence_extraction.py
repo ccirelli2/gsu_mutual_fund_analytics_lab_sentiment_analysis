@@ -439,7 +439,7 @@ def sentence_segmenter(data, para_col_name, pkey_col_name, mode,
     # Add Sentence Primary Key
     df_sentences=create_pkey(df_sentences, colname='accession_num',
             pk_name='sent_pkey', table_name='sentence_tokenization',
-            write2file=write2file, dir_output=dir_output,
+            write2file=False, dir_output=dir_output,
             project_folder=project_folder)
 
     ########################################################################### 
@@ -460,12 +460,20 @@ def sentence_segmenter(data, para_col_name, pkey_col_name, mode,
     ########################################################################### 
     # Write & Return Results                                                      
     ###########################################################################
-    if write2file:                                                              
+    if write2file:
+        # Create Subfolder
+        subfolder=create_project_folder(
+            dir_output=os.path.join(dir_output, project_folder),
+            name='tokenized_sentences')
+
+        # Redefine dir_output
+        dir_output=os.path.join(dir_output, project_folder)
+
         if iteration is not None:                                               
             filename=f'sentences_tokenized_iteration_{iteration}.csv'           
         else:                                                                   
             filename=f'sentences_tokenized_sample_pct_{sample_pct}.csv'         
-        write2csv(df_sentences, dir_output, project_folder, filename)           
+        write2csv(df_sentences, dir_output, subfolder, filename)           
 
     if mode == 'Debug' or mode == 'debug':                                      
         # Reset Index On DataFrames
@@ -474,12 +482,9 @@ def sentence_segmenter(data, para_col_name, pkey_col_name, mode,
         df_incorrect_sentences = df_incorrect_sentences[['accession_num']]
         df_paragraphs_incorrect = df_paragraphs_incorrect[['accession_num']]
             
-        # Return Results                                                            
-        return df_sentences, df_sent_min_toks, df_sent_min_chars, df_incorrect_sentences,\
-                df_paragraphs_incorrect
 
-    else:
-        return df_sentences
+    # Return
+    return df_sentences
         
 
 

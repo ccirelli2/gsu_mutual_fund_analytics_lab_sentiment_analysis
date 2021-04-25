@@ -80,22 +80,6 @@ def create_pkey(df, colname, pk_name, table_name, write2file, dir_output,
     return df
 
 
-@my_timeit
-def conn_mysql(password, database):                                             
-    conn=mysql.connector.connect(
-            host = 'localhost',                                                         
-            user='cc2',                                                                 
-            password=password,                                                          
-            database=database,
-            auth_plugin='mysql_native_password')
-    my_cursor = conn.cursor()
-    return conn, my_cursor 
-
-@my_timeit
-
-def load_mysql_data(conn, query):
-    return pd.read_sql(query, conn)
-
 
 @my_timeit
 def load_file(path2file, name, delimiter):
@@ -207,13 +191,15 @@ def create_project_folder(dir_output, name):
 
     """
     logging.info(f'Creating project folder => {name}')
-    path = dir_output + '/' + name
+    path = os.path.join(dir_output, name)
+
     try:
         os.mkdir(path)
         logging.info(f'---- Project folder created => {path}\n\n')
 
     except FileExistsError as err:
         logging.warning(f'---- {name} directory already exists\n\n')
+    
     return name            
 
 

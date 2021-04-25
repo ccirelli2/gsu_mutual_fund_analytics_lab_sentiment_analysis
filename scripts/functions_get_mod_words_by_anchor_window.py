@@ -218,8 +218,12 @@ def group_mods_by_window_pkey(df_windows, modal, negator, degree,
         df_final=df_final.merge(frame, left_on='window_pkey', right_on='window_pkey')
 
     if write2file:
+        subfolder=create_project_folder(
+                dir_output=os.path.join(dir_output, project_folder),
+                name='modifying_words')
+        dir_output=os.path.join(dir_output, project_folder)
         filename = f'{anchor_type}_consolidated_modifying_tokens.csv'
-        write2csv(df_final, dir_output, project_folder, filename)
+        write2csv(df_final, dir_output, subfolder, filename)
 
     return df_final   
 

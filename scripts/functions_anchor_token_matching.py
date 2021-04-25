@@ -214,8 +214,12 @@ def get_sentences_matching_tokens(
     # Write Output                       
     ########################################################################### 
     if write2file:
+        subfolder=create_project_folder(
+                dir_output=os.path.join(dir_output, project_folder),
+                name='sentences_anchor_token_matching')
+        dir_output=os.path.join(dir_output, project_folder)
         filename=f'match_sentences_anchor_toks_{token_type}.csv'
-        write2csv(df_final, dir_output, project_folder, filename)
+        write2csv(df_final, dir_output, subfolder, filename)
 
 
     if quality_control:                                                         
