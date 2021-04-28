@@ -61,8 +61,7 @@ def get_window_word_count(df):
 
 def clean_sentence(sent):
     """
-    Function that removes punctuation from sentence, tokenizes sent
-    and lemmatizes tokens
+    Function that removes punctuation from sentences
 
     Args:
         sent:
@@ -150,7 +149,6 @@ def get_word_window(accession_num, sentence_pkey, sentence, anchor_word,
         'accession_num':[], 'sent_pkey':[], 'sentences':[],
         'sentences_tok':[], 'anchor_word_pos':[], 'window_left':[],
         'anchor_word':[], 'window_right':[]}
-
 
     # Iterate Position of Each Anchor Word
     for pos in anchor_pos:
@@ -269,7 +267,7 @@ def get_anchor_word_window_by_sent(data, anchor_word_source, window_width,
 
 
 
-
+#### END
 
 
 

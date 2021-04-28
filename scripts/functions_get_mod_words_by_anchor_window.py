@@ -46,7 +46,8 @@ pd.set_option("max_columns", None)
 @my_timeit
 def identify_mod_tokens(df_windows, sentiment_dict, token_type):
     """
-
+    Function to identify modifying tokens within anchor word window
+    
     Args:
         df_windows: Dataframe; contains windows around anchor word
         sentiment_dict: DataFrame; contains modifying tokens
@@ -230,4 +231,4 @@ def group_mods_by_window_pkey(df_windows, modal, negator, degree,
 
 
 
-
+#### END

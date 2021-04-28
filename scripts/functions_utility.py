@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-Created on Wed Jan 13 18:34:49 2021
-
-@author: chris.cirelli
+Description:
+    Useful functions used throughout program to read and write data
+    and create directories.
 """
 
 ###############################################################################
@@ -246,7 +246,7 @@ def chunk_csv_file(data, num_chunks, filename_output, dir_output, write2file):
 
 
 
-
+#### END
 
 
 

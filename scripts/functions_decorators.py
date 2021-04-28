@@ -9,11 +9,16 @@ import logging; logging.basicConfig(level=logging.INFO)
 from functools import wraps
 from datetime import datetime
 
+###############################################################################
+# Decorators
+###############################################################################
+
+
 def my_timeit(f):                                                        
     """
     Decorator function to log function name and duration.
     Args:
-        f:
+        f: function
 
     Returns:
         

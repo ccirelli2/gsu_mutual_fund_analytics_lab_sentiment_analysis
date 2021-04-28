@@ -29,15 +29,13 @@ from functions_decorators import *
 
 def clean_sentence(sent):
     """
-    Function that removes punctuation from sentence, tokenizes sent
-    and lemmatizes tokens
+    Function that removes punctuation from sentences
 
     Args:
         sent:
 
     Returns:
-
-    String object no punctuation.
+        String object no punctuation.
     """
     # Remove New Line Characters
     sent = sent.replace('\\n', ' ')
@@ -57,6 +55,10 @@ def clean_sentence(sent):
 
     
 def clean_tok_sentence(sent, lemmatize):
+    """
+    Function to tokenize and lemmatize sentences
+    """
+
     # Clean Sentence
     sent_nopunkt=clean_sentence(sent)
     # Tokenize
@@ -202,8 +204,6 @@ def irregular_token_conditions(irregular_token, sent_tokens, window_direction,
             window_size=window_size,
             sent_tokens=sent_tokens)
 
-    
-    
     ###########################################################################
     # Find Target Token(s) in Window
     ###########################################################################
@@ -387,3 +387,5 @@ def execute_irregular_token_condition_function(data_matched_sent,
    
 
 
+
+#### END

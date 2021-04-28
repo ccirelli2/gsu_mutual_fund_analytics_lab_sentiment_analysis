@@ -23,9 +23,7 @@ from functions_utility import *
 ###############################################################################
 # Python Package Settings
 ###############################################################################
-logging.basicConfig(level=logging.INFO,
-                    #filename='logging.info'
-                    )
+logging.basicConfig(level=logging.INFO)
 pd.set_option('display.max_columns', None)
 pd.set_option('display.max_rows', None)
 
@@ -217,4 +215,4 @@ def calculate_sentence_lvl_sentiment_score(df, write2file, dir_output,
 
 
 
-
+#### END
