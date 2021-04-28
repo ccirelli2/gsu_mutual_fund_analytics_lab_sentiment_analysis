@@ -1,8 +1,8 @@
 """
-Description : 
-
-
+name: functions_sentence_extraction 
+desc: Functions that tokenize sentences from paragraphs.
 """
+
 ###############################################################################
 # Import Python Libraries
 ###############################################################################
@@ -46,9 +46,12 @@ import functions_sentence_extraction as m_sent_extr
 # Functions 
 ###############################################################################
 
-
 @my_timeit
 def get_list_words_end_dot_provided():
+    '''
+    Function to return a list of pre-defined abreviations to be used to train
+    the untrained tokenizer.
+    '''
     return ['dr.', 'mr.', 'bro.', 'bro', 'mrs.', 'ms.',
             'jr.', 'sr.', 'e.g.', 'vs.', 'u.s.',
             'etc.', 'j.p.', 'inc.', 'llc.', 'co.', 'l.p.',
@@ -61,6 +64,8 @@ def get_tokens_end_dot(data, num, dir_output, project_folder,
                        write2file):
     """
     Function to obtain tokens ending or containing a period.
+    These tokens will be combined with the predefined list of abbreviations
+    and passed to the untrained tokenizer for training.
 
     Parameters
     ----------
@@ -116,15 +121,16 @@ def train_nltk_sentence_tokenizer(paragraphs, print_abbrevs=False):
     """
     Function to train NLTK PunctSentTokenizer Class on unique body of text.
 
-    Supposed to work better than out of box sent tokenizer
-
     Args:
-    paragraphs : paragraphs on which to train tokenizer
-    print_abbrevs : if you want to print the abbreviations that were
-                    identified by the the trained tokenizer
+    paragraphs: list;
+        paragraphs on which to train tokenizer
+    print_abbrevs: Binary
+        Sent to standard out abbreviations that are identified by the the
+        trained tokenizer
     Returns :
     -------------
-    trained sentence tokenizer
+    NLTK Tokenizer Object
+        trained sentence tokenizer
     """
     # Ensure that paragraphs are strings
     paragraphs = [str(x) for x in paragraphs]
@@ -148,7 +154,6 @@ def train_nltk_sentence_tokenizer(paragraphs, print_abbrevs=False):
 
     # Return Tokenizer
     return tokenizer
-
 
 
 @my_timeit
@@ -314,11 +319,21 @@ def tokenizer_quality_control(df_sentences, max_num_tokens, max_num_chars,
 def get_paragraphs_for_incorrectly_tokenized_sentences(
         data, df_sentences, dir_output, project_folder, write2file):
     """
+    Function to return the paragraphs for incorrectly tokenized sentences.
+    The purpose is to provide the user the ability to cross reference the
+    paragraph when reviewing possibly incorrectly tokenized sentences.
 
     Args:
-        data:
-        df_sentences:
-
+        data: DataFrame
+            DataFrame containing paragraphs
+        df_sentences: DataFrame
+            DataFrame containing incorrectly tokenized sentences.
+        dir_output: Str
+        project_folder: Str
+        write2file: Boolean
+    
+    Return:
+        DataFrame containing paragraphs for incorrectly tokenized sentences.
     """
 
     # Get Primary Keys for Incorrectly Tokenized Sentences
@@ -489,4 +504,4 @@ def sentence_segmenter(data, para_col_name, pkey_col_name, mode,
 
 
 
-
+####### END

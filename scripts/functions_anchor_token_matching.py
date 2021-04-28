@@ -45,15 +45,18 @@ from functions_utility import *
 
 def clean_sentence(sent):
     """
-    Function that removes punctuation from sentence, tokenizes sent
-    and lemmatizes tokens
+    Function that removes punctuation from sentence.
 
     Args:
-        sent:
+        sent: Str   
+            Single sentence
+    Functions:
+        punct_nospace; punctuation that for which a space should not be
+        removed.
 
     Returns:
-
-    String object no punctuation.
+        String object no punctuation and .
+    
     """
     # Remove New Line Characters
     sent = sent.replace('\\n', ' ')
@@ -73,6 +76,9 @@ def clean_sentence(sent):
 
     
 def clean_tok_sentence(sent, lemmatize):
+    """
+    Function to tokenize sentences and lemmatize tokens.
+    """
     # Clean Sentence
     sent_nopunkt=clean_sentence(sent)
     # Tokenize
@@ -89,12 +95,12 @@ def get_sentences_matching_tokens(
         data_original, tokens, token_type, dir_output, project_folder,                      
         write2file, quality_control=False, lemmatize=False, iteration=None):    
     """                                                                         
-    Identify sentences that contain the list of input tokens.                     
+    Identify sentences that contain the list of input (anchor) tokens.                     
                                                                                 
     Steps:                                                                      
-    Unverified Match : find if any tokens are in sentence.                      
-    Verified Match : Involves actually cleaning and tokenizing sentences        
-                    and matching one to one with tokens                         
+    Unverified Match:   find if any tokens are in sentence.                      
+    Verified Match :    Involves actually cleaning and tokenizing sentences        
+                        and matching one to one with tokens                         
                                                                                 
     Args:                                                                       
         data: DataFrame; Rows = each row is a tokenized sentences.              
@@ -233,6 +239,7 @@ def get_sentences_matching_tokens(
 
 
 
+#### END
 
 
 
