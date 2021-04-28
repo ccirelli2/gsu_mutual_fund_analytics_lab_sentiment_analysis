@@ -2,75 +2,8 @@
 Description:
     This script is the control script for the sentiment analysis program.
 
-Directories:
-   See setup file.  Presently, this script uses an environmental variable
-   to define the root directly.  The user can replace this variable with a
-   string or create their own environmental variable. 
-
-Logging:
-    Presently, this script logs to stdout.  The user can change this by
-    passing the name of a file to the logging.basicConfig() method.
-
-Python libraries:
-    See requirements file.
-
-Model Parameters:
-    This script contains 8 basic parameters.
-        mode: str;
-            options include 'run' or 'debug'.  
-            If the program is run in debug mode a number of additional
-            processes will run in order to identify incorrectly tokenized
-            sentences, and tokens that include a minimum
-            number of characters, sentences that include a minimum number of
-            tokens.
-            Note: If the user is running the program in debug mode and
-            has a large dataset (> 1000 paragraphs) it is recommended that
-            the sample percentage be set to between 0.1 to 0.25 pct.
-        tokenizer: str;
-            options include 'out-of-box' and 'untrained'.
-            If out-of-box is chosen a pre-trained sentence tokenizer will be
-            used.  If untrained, this program will train a tokenizer on the
-            text provided.
-            Note: if the user has a small dataset then it is recommended
-            that the user select the out-of-box tokenizer.
-        pkey_col_name: str;
-            The name of the column that includes the primary key.
-            The default value is 'accession_num'.
-        para_col_name: str;
-            The name of the column that includes the paragraphs.
-            The default value is 'principal_risks'.
-        mod_token_names=['uncertain', 'degree', 'negator', 'modal']
-
-        # Sentence Extraction Debug
-        max_num_tokens=3
-        max_num_chars=10
-        sample_pct=1.0
-
-# Output
-write2file=True
-
-    pkey_col_name; Str
-        The name of the primary key in your dataframe that is unique to each
-        pargraph. 
-    :paragraph_col_name; Str
-        The name of the column in the dataframe that contains
-        the text for which the user would like generate a sentiment score.
-
-Data:
-    This script loads a test dataset.  Any other dataset passed to this
-    function must be passed as a pandas Data Frame and contain two columns:
-    a column with paragraphs separated by rows and a paragraph primary key
-    that should be titled 'accession_num'
-    Note: when loading the test dataset the separator is '|'.
-
-Output files:
-    Consolidated modifying token table csv separator "|".  Values within
-    columns are separated by "," so do not use this to load the file.
-
-
 Last updated: 04/27/2021
 """
-
 
 ###############################################################################
 # Import Python Libraries
@@ -181,8 +114,32 @@ def get_sentiment_score(data, para_col_name, pkey_col_name, mode, tokenizer,
         para_col_name: Str;
             Name of column containing text for which the user would like to
             generate the sentiment score.
+        pkey_col_name: Str;
+            See README file
+        mode: Str;
+            See README file
+        tokenizer: Str
+            See README file
+        sample_pct: Float;
+            See README file
+        max_num_tokens: Int
+            See README file
+        max_num_chars: Int
+            See README file
+        sent_dict: DataFrame
+            Dataframe containing the sentiment dictionary.  This file is
+            included in this repository under data and imported within the
+            data section of this script.
+        dir_output: Str;
+            The directory to which output should be written.
+        project_folder: Str;
+            Automatically created for the user by a utility function.
+            Alternatively, the user can create their own folder name and
+            pass it to this function.
+        write2file: Binary;
+            Whether to write output to the output directory or not.
     Returns:
-        
+        DataFrames containing the paragraph and sentence sentiment scores.
 
     """
     ###########################################################################
