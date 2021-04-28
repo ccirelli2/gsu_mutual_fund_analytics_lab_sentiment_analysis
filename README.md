@@ -9,29 +9,29 @@
 
 # Main File (main.py)
 Description:                                                                    
-    This script is the control script for the sentiment analysis program.          
+-	This script is the control script for the sentiment analysis program.          
                                                                                 
 Directories:                                                                    
-   See setup file.  Presently, this script uses an environmental variable          
-   to define the root directly.  The user can replace this variable with a         
-   string or create their own environmental variable.                           
+-	See setup file.  Presently, this script uses an environmental variable          
+	to define the root directly.  The user can replace this variable with a         
+   	string or create their own environmental variable.                           
                                                                                 
 Logging:                                                                        
-    Presently, this script logs to stdout.  The user can change this by         
-    passing the name of a file to the logging.basicConfig() method.             
+- 	Presently, this script logs to stdout.  The user can change this by         
+    	passing the name of a file to the logging.basicConfig() method.             
                                                                                 
 Python libraries:                                                               
-    See requirements file.                                                      
+-	See requirements file.                                                      
                                                                                 
 Data:                                                                           
-    This script loads a test dataset.  Any other dataset passed to this         
-    function must be passed as a pandas Data Frame and contain two columns:        
-    a column with paragraphs separated by rows and a paragraph primary key         
-    that should be titled 'accession_num'                                       
-    Note: when loading the test dataset the separator is '|'.  
+-	This script loads a test dataset.  Any other dataset passed to this         
+    	function must be passed as a pandas Data Frame and contain two columns:        
+    	a column with paragraphs separated by rows and a paragraph primary key         
+    	that should be titled 'accession_num'                                       
+    	Note: when loading the test dataset the separator is '|'.  
 
 Model Parameters:                                                               
-    mode: str;                                                                  
+-	mode: str;                                                                  
         options include 'run' or 'debug'.                                       
         If the program is run in debug mode a number of additional              
         processes will run in order to identify incorrectly tokenized           
@@ -41,37 +41,37 @@ Model Parameters:
         Note: If the user is running the program in debug mode and              
         has a large dataset (> 1000 paragraphs) it is recommended that          
         the sample percentage be set to between 0.1 to 0.25 pct.                
-    max_num_tokens: Int;                                                        
+-	max_num_tokens: Int;                                                        
         Utilized in debug mode and defines the maximum number of tokens         
         to be included as possibly eroneously                                   
         tokenized sentence.                                                     
-    max_num_chars: Int;                                                         
+-	max_num_chars: Int;                                                         
         Utilized in the debug mode and defines the maximum number of            
         characters for a token to be identified as possibly an                  
         enroneous token.                                                        
-    sample_pct: Float,                                                          
+-	sample_pct: Float,                                                          
         A user defined value that will take a percentage sample of the          
         number of rows in the dataframe passed to this function.                
-    tokenizer: str;                                                             
+-	tokenizer: str;                                                             
         options include 'out-of-box' and 'untrained'.                           
         If out-of-box is chosen a pre-trained sentence tokenizer will be        
         used.  If untrained, this program will train a tokenizer on the         
         text provided.                                                          
         Note: if the user has a small dataset then it is recommended            
         that the user select the out-of-box tokenizer.                          
-    pkey_col_name: str;                                                         
+-	pkey_col_name: str;                                                         
         The name of the column that includes the primary key.                   
         The default value is 'accession_num'.                                   
-    para_col_name: str;                                                         
+-	para_col_name: str;                                                         
         The name of the column that includes the paragraphs.                    
         The default value is 'principal_risks'.                                 
-    mod_token_names: list;                                                      
+-	mod_token_names: list;                                                      
         A list containing the names of the groups of modifying tokens.          
         This list object should not be changes.                                 
                                                                                 
 Output files:                                                                   
-    This program will write a step-wise output to the to the output directory   
-    in individual sub-folders.                                                  
+-	This program will write a step-wise output to the to the output directory   
+    	in individual sub-folders.                                                  
                                                                                 
 Last updated: 04/27/2021                
 
