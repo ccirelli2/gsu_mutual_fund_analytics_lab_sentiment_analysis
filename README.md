@@ -1,8 +1,10 @@
 # GSU Mutual Fund Analytics Lab - Sentiment Analysis
 
 ### Project Description
-- Create a program that calculates the sengiment for mutual fund disclosures at the sentence and paragraph level.
-- Users pass in a list or dataframe including the paragraphs from a mutual fund disclosure and the program returns the sentiment. 
+- 	Create a program that calculates the sengiment for mutual fund disclosures
+	at the sentence and paragraph level.
+- 	Users pass in a list or dataframe including the paragraphs from a
+	mutual fund disclosure and the program returns the sentiment. 
 
 ### Role
 - Lead developer of code found in this repository.
@@ -15,17 +17,23 @@
 
 
 ### Pending Code Enhancements:
-1. Sentiment Dictionary: Needs to be updated to incorporate the most recent tokens.
+1. 	Sentiment Dictionary: Needs to be updated to incorporate the most recent
+	tokens.
 
-2. Headings: Address the issue that the code does not distinguish between paragraphs and headings.
+2. 	Headings: Address the issue that the code does not distinguish between
+	paragraphs and headings.
 
-3. Paragraph Primary Key:
-	- It is assumed that the user will have a primary key associated with the paragraphs that are input into the function.
-	- If one is not provided, then a function should be created to automatically create one. 
+3. 	Paragraph Primary Key:
+	- It is assumed that the user will have a primary key associated with
+	the paragraphs that are input into the function.
+	- If one is not provided, then a function should be created to
+	automatically create one. 
 
-4. Token Size threshold:  Presently, the code does not incorporate a threshold on the number of characters a token may contain
-   	in order to be included in a tokenized sentence.  Below is an example of a word window that includes single letter tokens
-	that are counted as words. 
+4. 	Token Size threshold:  Presently, the code does not incorporate a threshold
+	on the number of characters a token may contain
+   	in order to be included in a tokenized sentence.  Below is an example
+	of a word window that includes single letter tokens that are counted
+	as words. 
 
 	Example From Test Dataset
 	accession_num	0000035315-10-000049
@@ -44,12 +52,28 @@
 	anchor word	class
 	window right	a,class,t,class,b
 	
-5. Parameter Names: They are hard coded in the main.py script.  If, for instance, the dictionary column names are changed or added to
-   (ex: an additional modifying token category were to be added) the paramter names would need to be updated.
+5. 	Parameter Names: They are hard coded in the main.py script.  If, for
+	instance, the dictionary column names are changed or added to
+   	(ex: an additional modifying token category were to be added) the
+	paramter names would need to be updated.
 
-6. Scoring Function:
-	- Needs to be reviewed and approved.  Starting on row 99 the code calculates the product of the modifying word scores.
-	- The code addresses when there is an even and odd number of negative scores, which could flip the polarity of the sentiment.
-	- This particular portion of the code should be reviewed and approved by the individual(s) responsible for the intent of the
+6. 	Scoring Function:
+	- Needs to be reviewed and approved.  Starting on row 99 the code
+	calculates the product of the modifying word scores.
+	- The code addresses when there is an even and odd number of negative
+	scores, which could flip the polarity of the sentiment.
+	- This particular portion of the code should be reviewed and approved
+	by the individual(s) responsible for the intent of the
 	  sentiment calculation.
- 	- Note that between lines 148 and lines 152 we take the product of all of the normalized modifying words but we do not address if all are negative, which would flip the polarity to positive. 
+ 	- Note that between lines 148 and lines 152 we take the product of all
+	of the normalized modifying words but we do not address if all are
+	negative, which would flip the polarity to positive.
+
+7.  	main.py file parameters:
+	includes a parameter to declare the column name that contains the
+	paragraph primary key.  that being said, 'accession_num' has been
+	hardcoded in the function documents, which means that either all the
+	scripts need to be changed or the user must pass a Data Frame with the
+	title of the primary key column = 'accession_num'
+
+ 
