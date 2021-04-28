@@ -2,19 +2,53 @@
 Description:
     This script is the control script for the sentiment analysis program.
 
-Requirements:
-    User will need to pip install the requirements file prior to execution.
-
 Directories:
-    The user will need to define the path of the dir_repo object to comport with
-    the location on their file system.
-    
+   See setup file.  Presently, this script uses an environmental variable
+   to define the root directly.  The user can replace this variable with a
+   string or create their own environmental variable. 
+
 Logging:
-    In the event that the user wants to create a log file they can just comment
-    out the line that defines the logging filename under Python Package
-    Settings. Othewise, logging will go to stdout.
+    Presently, this script logs to stdout.  The user can change this by
+    passing the name of a file to the logging.basicConfig() method.
+
+Python libraries:
+    See requirements file.
 
 Model Parameters:
+    This script contains 8 basic parameters.
+        mode: str;
+            options include 'run' or 'debug'.  
+            If the program is run in debug mode a number of additional
+            processes will run in order to identify incorrectly tokenized
+            sentences, and tokens that include a minimum
+            number of characters, sentences that include a minimum number of
+            tokens.
+            Note: If the user is running the program in debug mode and
+            has a large dataset (> 1000 paragraphs) it is recommended that
+            the sample percentage be set to between 0.1 to 0.25 pct.
+        tokenizer: str;
+            options include 'out-of-box' and 'untrained'.
+            If out-of-box is chosen a pre-trained sentence tokenizer will be
+            used.  If untrained, this program will train a tokenizer on the
+            text provided.
+            Note: if the user has a small dataset then it is recommended
+            that the user select the out-of-box tokenizer.
+        pkey_col_name: str;
+            The name of the column that includes the primary key.
+            The default value is 'accession_num'.
+        para_col_name: str;
+            The name of the column that includes the paragraphs.
+            The default value is 'principal_risks'.
+        mod_token_names=['uncertain', 'degree', 'negator', 'modal']
+
+        # Sentence Extraction Debug
+        max_num_tokens=3
+        max_num_chars=10
+        sample_pct=1.0
+
+# Output
+write2file=True
+
     pkey_col_name; Str
         The name of the primary key in your dataframe that is unique to each
         pargraph. 
@@ -23,16 +57,18 @@ Model Parameters:
         the text for which the user would like generate a sentiment score.
 
 Data:
-    Test: The user can run the sentiment function on test data that
-    can be found at dir_repo/data/test_data.csv.  The delimeter for
-    this file is '|'.
+    This script loads a test dataset.  Any other dataset passed to this
+    function must be passed as a pandas Data Frame and contain two columns:
+    a column with paragraphs separated by rows and a paragraph primary key
+    that should be titled 'accession_num'
+    Note: when loading the test dataset the separator is '|'.
 
 Output files:
     Consolidated modifying token table csv separator "|".  Values within
     columns are separated by "," so do not use this to load the file.
 
 
-Last updated: 04/14/2021
+Last updated: 04/27/2021
 """
 
 
