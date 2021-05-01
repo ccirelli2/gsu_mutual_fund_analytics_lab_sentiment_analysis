@@ -149,7 +149,7 @@ def get_window_by_direction(anchor_word, window_direction, window_size,
 
 
 def irregular_token_conditions(irregular_token, sent_tokens, window_direction,
-        window_size, anchor_word, targets, token_condition=1):
+        window_size, anchor_word, targets, token_condition):
     """
     Test whether the existence of target tokens around our irregular token
     results in counting or not conting the irregular token.
