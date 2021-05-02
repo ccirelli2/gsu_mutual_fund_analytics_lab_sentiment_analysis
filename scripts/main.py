@@ -70,7 +70,7 @@ data=load_file(path2file, name='test', delimiter="|")
 
 # Sentiment Dictionary
 path2file=os.path.join(dir_data, 'sentiment_dict.csv')
-sent_dict = load_file(path2file, name='sentiment_dictionary',
+sent_dict = load_file(path2file, name='sent_dict_prepared',
         delimiter=',')
 
 # Create Project Folder

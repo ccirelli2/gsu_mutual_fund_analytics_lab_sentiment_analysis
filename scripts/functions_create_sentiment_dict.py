@@ -156,6 +156,7 @@ def create_sent_dict(data, sheetname):
         'Application', 'ConfirmCondition', 'Anchor_token',
         'Target_tokens', 'Window_size', 'Window_direction']]
     
+
     # Print Final Column Structure
     print(f'Final column structure => {data.columns.tolist()}')
     print(f'Dataframe shape => {data.shape}\n')
