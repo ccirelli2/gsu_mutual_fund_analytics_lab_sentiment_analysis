@@ -2,7 +2,7 @@
 
 
 ### Project Description
-- 	Create a program that calculates the sengiment for mutual fund disclosures
+- 	Create a program that calculates the sentiment of mutual fund disclosures
 	at the sentence and paragraph level.
 - 	Users pass in a list or dataframe including the paragraphs from a
 	mutual fund disclosure and the program returns the sentiment. 
