@@ -1,12 +1,16 @@
 """
+Dependencies:
 
-1.) Linux users: Create pythong environment and pip install requirements file.
+1.) Linux users: Create python environment and pip install requirements file.
+        pip install -r requirements.txt
+
     Anaconda Users: Create python environment
+        conda install --file requirements.txt
+
 2.) Environmental Variables:
-    - create a file titled .env in the root directory of this repo.
-      In the file add the following line and between the quotes add the path to this
-      git hub repository.  save the file. 
-      ROOTDIR=""
+    The dir_repo variable in the main script refers to an environmental variable.
+    Either the user can recreate this variable to refer to the path of their repo or replace
+    it with an absolute path.
 
 
 
